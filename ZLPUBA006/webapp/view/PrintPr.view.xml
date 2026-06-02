@@ -1,0 +1,711 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" controllerName="com.cu.s4hana.zlpuba006.controller.PrintPr" xmlns:uxap="sap.uxap"
+          xmlns="sap.m" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:layout="sap.ui.layout"
+          xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" busyIndicatorDelay="0">
+    <uxap:ObjectPageLayout showTitleInHeaderContent="true" showHeaderContent="true" showAnchorBar="true"
+                           showFooter="false" subSectionLayout="TitleOnTop">
+        <uxap:headerContent/>
+        <uxap:headerTitle>
+            <uxap:ObjectPageHeader objectTitle="{i18n>PrintPr}" objectSubtitle="" headerDesign="Light"
+                                   objectImageShape="Square" isObjectIconAlwaysVisible="false"
+                                   isObjectTitleAlwaysVisible="false" isObjectSubtitleAlwaysVisible="false"
+                                   isActionAreaAlwaysVisible="true">
+                <uxap:actions>
+                    <Button text="{i18n>Button.Print}" type="Emphasized" iconFirst="true" width="auto"
+                            enabled="{mVisibleControl>/print/enabled}"
+                            visible="true" press="onPrintPress"
+                            iconDensityAware="false"/>
+                </uxap:actions>
+                <uxap:breadCrumbsLinks/>
+                <uxap:navigationBar/>
+            </uxap:ObjectPageHeader>
+        </uxap:headerTitle>
+        <uxap:sections>
+            <uxap:ObjectPageSection showTitle="true" title="{i18n>GeneralData}" titleUppercase="true" visible="true">
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection title="" mode="Expanded">
+                        <uxap:blocks>
+                            <VBox>
+                                <form:Form width="100%" editable="true" visible="true">
+                                    <form:title/>
+                                    <form:formContainers>
+                                        <form:FormContainer visible="true">
+                                            <form:formElements>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="{i18n>PrNo}" design="Standard" width="100%"
+                                                               required="false" textAlign="Begin"
+                                                               textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <MultiInput placeholder="{i18n>FilPrNo}" type="Text"
+                                                                    valueHelpRequest="onVHPrintPr"
+                                                                    showValueHelp="true" enabled="true" visible="true"
+                                                                    change="onPRInputChange" tokenUpdate="onTokenUpdate"
+                                                                    width="auto" valueHelpOnly="false" required="false"
+                                                                    id="PrNoInput"
+                                                                    valueStateText="Invalid entry" maxLength="10"/>
+                                                    </form:fields>
+                                                </form:FormElement>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="{i18n>PrType}" design="Standard" width="100%"
+                                                               required="false" textAlign="Begin"
+                                                               textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <RadioButtonGroup
+                                                                id="PRTypeRadioButton"
+                                                                columns="3" selectedIndex="0" valueState="None"
+                                                                width="auto"
+                                                                editable="true" enabled="true" textDirection="Inherit"
+                                                                select="onRadioButtonGroupSelect">
+                                                            <buttons>
+                                                                <RadioButton text="{i18n>Purchase}" editable="true"
+                                                                             enabled="true" app:value="PU"
+                                                                             visible="true" width="auto"
+                                                                             valueState="None"
+                                                                             selected="false"/>
+                                                                <RadioButton text="{i18n>Hire}" editable="true"
+                                                                             enabled="true" app:value="HI"
+                                                                             visible="true" width="auto"
+                                                                             valueState="None"
+                                                                             selected="false"/>
+                                                                <RadioButton text="{i18n>Rent}" editable="true"
+                                                                             enabled="true" app:value="RE"
+                                                                             visible="true" width="auto"
+                                                                             valueState="None"
+                                                                             selected="false"/>
+                                                            </buttons>
+                                                        </RadioButtonGroup>
+                                                    </form:fields>
+                                                </form:FormElement>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="{i18n>Req.To}" design="Standard" width="100%"
+                                                               required="false"
+                                                               textAlign="Begin" textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <Input type="Text" showValueHelp="false" enabled="true"
+                                                               value="{mPRDetail>/ZTO}"
+                                                               visible="true" width="auto" valueHelpOnly="false"
+                                                               required="false" valueStateText="Invalid entry"
+                                                               maxLength="0"/>
+                                                    </form:fields>
+                                                </form:FormElement>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="{i18n>Reason}" design="Standard" width="100%"
+                                                               required="false"
+                                                               textAlign="Begin" textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <Input type="Text" showValueHelp="true" enabled="true"
+                                                               visible="true" width="auto" valueHelpOnly="true"
+                                                               required="false" valueStateText="Invalid entry"
+                                                               valueHelpRequest="onVHReason" value="{mPRDetail>/REASON}"
+                                                               maxLength="20"/>
+                                                    </form:fields>
+                                                </form:FormElement>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="" design="Standard" width="100%" required="false"
+                                                               textAlign="Begin" textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <TextArea rows="4" cols="10" maxLength="2048" wrapping="None"
+                                                                  liveChange="onTextBoxLiveChange"
+                                                                  enabled="true" required="false"
+                                                                  value="{mPRDetail>/ZREASON}"
+                                                                  valueStateText="Invalid entry" visible="true"/>
+                                                    </form:fields>
+                                                </form:FormElement>
+                                            </form:formElements>
+                                            <form:title/>
+                                        </form:FormContainer>
+                                    </form:formContainers>
+                                    <form:layout>
+                                        <form:ResponsiveGridLayout adjustLabelSpan="false" columnsL="2" labelSpanL="3"
+                                                                   columnsM="1" labelSpanM="2" labelSpanS="12"/>
+                                    </form:layout>
+                                </form:Form>
+                                <form:Form width="100%" editable="true" visible="true">
+                                    <form:title/>
+                                    <form:formContainers>
+                                        <form:FormContainer visible="true">
+                                            <form:formElements>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="" design="Standard" width="100%" required="false"
+                                                               textAlign="Begin" textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <CheckBox text="{i18n>Attachment}"
+                                                                  selected="{mPRDetail>/ATTACH_FLAG}"
+                                                                  editable="true"
+                                                                  enabled="true" visible="true" width="auto"
+                                                                  textDirection="Inherit" wrapping="false"
+                                                                  useEntireWidth="true"/>
+                                                    </form:fields>
+                                                </form:FormElement>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="" design="Standard" width="100%" required="false"
+                                                               textAlign="Begin" textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <CheckBox text="{i18n>ApproveResult}"
+                                                                  select="onApproveResultSelect"
+                                                                  selected="{mPRDetail>/APVRPT_FLAG}"
+                                                                  editable="true" enabled="{mVisibleControl>/CL_APVRPT}"
+                                                                  visible="true" width="auto"
+                                                                  textDirection="Inherit" wrapping="false"
+                                                                  useEntireWidth="true"/>
+
+                                                    </form:fields>
+                                                </form:FormElement>
+                                                <form:FormElement visible="true">
+                                                    <form:label>
+                                                        <Label text="" design="Standard" width="100%" required="false"
+                                                               textAlign="Begin" textDirection="Inherit"
+                                                               visible="true"/>
+                                                    </form:label>
+                                                    <form:fields>
+                                                        <Text text="{i18n>Print.Pr.Date}"/>
+
+<!--                                                        <DatePicker-->
+<!--                                                                enabled="{=${mPRDetail>/EDATE_FLAG} !== true}"-->
+<!--                                                                placeholder=""-->
+<!--                                                                valueFormat="dd.MM.yyyy"-->
+<!--                                                                displayFormat="dd.MM.yyyy"-->
+<!--                                                                displayFormatType="Gregorian"-->
+<!--                                                                dateValue="{mPRDetail>/PRINT_DATE}"-->
+<!--                                                                -->
+<!--                                                                change="onPrintDateChange"-->
+<!--                                                                class="sapUiSmallMarginBottom"/>-->
+														<!--DEL BY CH01-->
+                                                        <!--<DatePicker-->
+                                                        <!--        id="inputPrintDate"-->
+                                                        <!--        enabled="{=${mPRDetail>/EDATE_FLAG} !== true}"-->
+                                                        <!--        placeholder=""-->
+                                                        <!--        valueFormat="dd.MM.yyyy"-->
+                                                        <!--        displayFormat="dd.MM.yyyy"-->
+                                                        <!--        displayFormatType="Gregorian"-->
+                                                        <!--        dateValue="{ parts : ['mPRDetail>/PRINT_DATE','mPRDetail>/EDATE_FLAG'], formatter:'.formatter.parsePrintDateValue'}"-->
+                                                        <!--        change="onPrintDateChange"-->
+                                                        <!--        class="sapUiSmallMarginBottom"/>-->
+                                                        <!--DEL BY CH01-->
+                                                        <!--BOI CH01-->
+                                                         <DatePicker
+                                                                id="inputPrintDate"
+                                                                enabled="{mPRDetail>/EDATE_FLAG}"
+                                                                placeholder=""
+                                                                valueFormat="dd.MM.yyyy"
+                                                                displayFormat="dd.MM.yyyy"
+                                                                displayFormatType="Gregorian"
+                                                                dateValue="{ parts : ['mPRDetail>/PRINT_DATE','mPRDetail>/EDATE_FLAG'], formatter:'.formatter.parsePrintDateValue'}"
+                                                                change="onPrintDateChange"
+                                                                class="sapUiSmallMarginBottom"/>   
+                                                        <!--EOI CH01-->
+                                                    </form:fields>
+                                                </form:FormElement>
+                                            </form:formElements>
+                                            <form:title>
+                                                <core:Title text="{i18n>Additional.Doc}"/>
+                                            </form:title>
+                                        </form:FormContainer>
+                                    </form:formContainers>
+                                    <form:layout>
+                                        <form:ResponsiveGridLayout adjustLabelSpan="false" columnsL="2" labelSpanL="3"
+                                                                   columnsM="1" labelSpanM="2" labelSpanS="12"/>
+                                    </form:layout>
+                                </form:Form>
+                                <Table width="100%" noDataText="No data" mode="SingleSelectMaster" showSeparators="All"
+                                       growing="false" growingThreshold="20" growingScrollToLoad="true"
+                                       items="{mApproveDetail>/}" visible="{mPRDetail>/APVRPT_FLAG}"
+                                       delete="onDelRowPress" id="ApproveTable"
+                                       class="sapUiResponsiveMargin">
+                                    <infoToolbar>
+                                        <Toolbar width="100%" height="auto" design="Auto" visible="false"
+                                                 enabled="true">
+                                            <content>
+                                                <Label text="Label" design="Standard" width="100%" required="false"
+                                                       textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </content>
+                                        </Toolbar>
+                                    </infoToolbar>
+                                    <headerToolbar>
+                                        <OverflowToolbar width="auto" height="auto" design="Transparent" visible="true"
+                                                         enabled="true">
+                                            <content>
+                                                <Title text="{i18n>ApproveResultList} ({mApproveDetail>/length})"
+                                                       titleStyle="Auto" width="auto"
+                                                       textAlign="Begin" visible="true" wrapping="false"/>
+                                                <ToolbarSpacer width=""/>
+                                                <Button text="{i18n>Button.Save}" type="Ghost" iconFirst="true"
+                                                        width="auto"
+                                                        enabled="true" visible="true" iconDensityAware="false"
+                                                        press="onApproveDetailSavePress"/>
+                                                <Button text="{i18n>Button.AddItem}" type="Ghost" iconFirst="true"
+                                                        width="auto"
+                                                        enabled="true" visible="true" iconDensityAware="false"
+                                                        press="onApproveDetailAddRowPress"/>
+                                                <Button text="{i18n>Button.DeleteItem}" type="Reject" iconFirst="true"
+                                                        width="auto"
+                                                        enabled="true" visible="true" iconDensityAware="false"
+                                                        press="onApproveDetailDelRowPress"/>
+                                            </content>
+                                        </OverflowToolbar>
+                                    </headerToolbar>
+                                    <columns>
+                                        <Column width="100px" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>PRDoc}" width="auto" maxLines="1" wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+                                        <Column width="120px" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>ApproveNo}" width="auto" maxLines="1" wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+                                        <Column width="auto" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>ApproveListItem}" width="auto" maxLines="1"
+                                                      wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+
+                                        <Column width="auto" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>ApproveListItem2}" width="auto" maxLines="1"
+                                                      wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+
+
+                                        <Column width="100px" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>Vendor}" width="auto" maxLines="1" wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+                                        <Column width="100px" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>Vendor1}" width="auto" maxLines="1" wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+                                        <Column width="100px" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>Vendor2}" width="auto" maxLines="1" wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+                                        <Column width="100px" hAlign="Left" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>Vendor3}" width="auto" maxLines="1" wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+                                        <Column width="100px" hAlign="Right" vAlign="Top" minScreenWidth="Tablet"
+                                                demandPopin="true" popinDisplay="Inline" mergeDuplicates="false">
+                                            <header>
+                                                <Text text="{i18n>ApproveAmount}" width="auto" maxLines="1"
+                                                      wrapping="false"
+                                                      textAlign="Begin" textDirection="Inherit" visible="true"/>
+                                            </header>
+                                            <footer/>
+                                        </Column>
+                                    </columns>
+                                    <items>
+                                        <ColumnListItem type="In-Active">
+                                            <cells>
+                                                <!--<Text text="{mApproveDetail>BANFN}"/>-->
+                                                <Select editable="true" enabled="true" visible="true" width="auto"
+                                                        selectedKey="{mApproveDetail>BANFN}"
+                                                        items="{mPRDocList>/}"
+                                                        valueState="None" maxWidth="100%">
+                                                    <items>
+                                                        <core:Item text="{mPRDocList>BANFN}" enabled="true"
+                                                                   key="{mPRDocList>BANFN}"/>
+                                                        <!--<core:Item text="{mPRList>/}" enabled="true" key="{mPRList>/}"/>-->
+                                                    </items>
+                                                </Select>
+                                                <Input type="Text" showValueHelp="false" enabled="true" visible="true"
+                                                       width="100%" valueHelpOnly="false" required="false"
+                                                       value="{mApproveDetail>APPV_NO}"
+                                                       valueStateText="Invalid entry" maxLength="20"/>
+                                                <TextArea type="Text" showValueHelp="false" enabled="true"
+                                                          visible="true"
+                                                          value="{mApproveDetail>ITEM_DESC}"
+                                                          width="100%" valueHelpOnly="false" required="false"
+                                                          valueStateText="Invalid entry" maxLength="128"/>
+
+                                                <TextArea type="Text" showValueHelp="false" enabled="true"
+                                                          visible="true"
+                                                          value="{mApproveDetail>ITEM_DESC_2}"
+                                                          width="100%" valueHelpOnly="false" required="false"
+                                                          valueStateText="Invalid entry" maxLength="128"/>
+
+                                                <Input type="Text" showValueHelp="false" enabled="true" visible="true"
+                                                       width="100%" valueHelpOnly="false" required="false"
+                                                       value="{mApproveDetail>NAME1}"
+                                                       valueStateText="Invalid entry" maxLength="35"/>
+                                                <Input type="Text" showValueHelp="false" enabled="true" visible="true"
+                                                       width="100%" valueHelpOnly="false" required="false"
+                                                       value="{mApproveDetail>NAME2}"
+                                                       valueStateText="Invalid entry" maxLength="35"/>
+                                                <Input type="Text" showValueHelp="false" enabled="true" visible="true"
+                                                       width="100%" valueHelpOnly="false" required="false"
+                                                       value="{mApproveDetail>NAME3}"
+                                                       valueStateText="Invalid entry" maxLength="35"/>
+                                                <Input type="Text" showValueHelp="false" enabled="true" visible="true"
+                                                       width="100%" valueHelpOnly="false" required="false"
+                                                       value="{mApproveDetail>NAME4}"
+                                                       valueStateText="Invalid entry" maxLength="35"/>
+                                                <Input type="Text" description="" showValueHelp="false"
+                                                       textAlign="Right" change="getFormattedAmount"
+                                                       enabled="true" visible="true" width="100%" valueHelpOnly="false"
+                                                       value="{path :'mApproveDetail>AMT' ,type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits:2 , maxFractionDigits: 2 }}"
+                                                       required="false" valueStateText="Invalid entry" maxLength="0"/>
+
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                            </VBox>
+                        </uxap:blocks>
+                        <uxap:moreBlocks/>
+                        <uxap:actions/>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+                <uxap:customAnchorBarButton/>
+            </uxap:ObjectPageSection>
+            <uxap:ObjectPageSection showTitle="true" title="{i18n>ApprovalData}" titleUppercase="true" visible="true">
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection title="" mode="Expanded">
+                        <uxap:blocks>
+                            <layout:VerticalLayout enabled="{mVisibleControl>/print/enabled}">
+                                <form:Form width="100%" editable="true" visible="true">
+                                    <form:formContainers>
+                                        <form:FormContainer visible="true">
+                                            <form:FormElement>
+                                                <form:label>
+                                                    <!--                                                    <Label text="{i18n>Label.AuthPerson}" required="false"/>-->
+                                                </form:label>
+                                                <form:fields>
+                                                    <Input type="Text" showValueHelp="true"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/PERNR_1}"
+                                                           app:ApproveRole="_1" placeholder="รหัสพนักงาน"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           change="onEmployeeChange"
+                                                           valueHelpRequest="onVHEmployee"
+                                                           maxLength="8">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/KW_POS_1}" placeholder="ตำแหน่งวิชาการ"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/NAME_1}" placeholder="ชื่อ"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/LASTNAME_1}" placeholder="นามสกุล"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/position/enabled}"
+                                                           value="{mPRDetail>/GE_POS_1}" placeholder="ตำแหน่งบริหาร"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                </form:fields>
+                                            </form:FormElement>
+                                            <form:title>
+                                                <core:Title text="{i18n>Initiator}" level="Auto"/>
+                                            </form:title>
+                                        </form:FormContainer>
+                                        <form:FormContainer visible="true">
+                                            <form:FormElement>
+                                                <form:label>
+                                                    <!--                                                    <Label text="{i18n>Label.AuthPerson}" required="false"/>-->
+                                                </form:label>
+                                                <form:fields>
+                                                    <Input type="Text" showValueHelp="true"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/PERNR_2}"
+                                                           app:ApproveRole="_2" placeholder="รหัสพนักงาน"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           change="onEmployeeChange"
+                                                           valueHelpRequest="onVHEmployee"
+                                                           maxLength="8">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/KW_POS_2}" placeholder="ตำแหน่งวิชาการ"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/NAME_2}" placeholder="ชื่อ"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/LASTNAME_2}" placeholder="นามสกุล"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/position/enabled}"
+                                                           value="{mPRDetail>/GE_POS_2}" placeholder="ตำแหน่งบริหาร"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                </form:fields>
+                                            </form:FormElement>
+                                            <form:title>
+                                                <core:Title text="{i18n>MaterialOfficer}" level="Auto"/>
+                                            </form:title>
+                                        </form:FormContainer>
+                                        <form:FormContainer visible="true">
+                                            <form:FormElement>
+                                                <form:label>
+                                                    <!--                                                    <Label text="{i18n>Label.AuthPerson}" required="false"/>-->
+                                                </form:label>
+                                                <form:fields>
+                                                    <Input type="Text" showValueHelp="true"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/PERNR_3}"
+                                                           app:ApproveRole="_3" placeholder="รหัสพนักงาน"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           change="onEmployeeChange"
+                                                           valueHelpRequest="onVHEmployee"
+                                                           maxLength="8">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/KW_POS_3}" placeholder="ตำแหน่งวิชาการ"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/NAME_3}" placeholder="ชื่อ"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/LASTNAME_3}" placeholder="นามสกุล"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/position/enabled}"
+                                                           value="{mPRDetail>/GE_POS_3}" placeholder="ตำแหน่งบริหาร"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                </form:fields>
+                                            </form:FormElement>
+                                            <form:title>
+                                                <core:Title text="{i18n>MaterialManager}" level="Auto"/>
+                                            </form:title>
+                                        </form:FormContainer>
+                                        <form:FormContainer visible="true">
+                                            <form:FormElement>
+                                                <form:label>
+                                                    <!--                                                    <Label text="{i18n>Label.AuthPerson}" required="false"/>-->
+                                                </form:label>
+                                                <form:fields>
+                                                    <Input type="Text" showValueHelp="true"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/PERNR_4}"
+                                                           app:ApproveRole="_4" placeholder="รหัสพนักงาน"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           change="onEmployeeChange"
+                                                           valueHelpRequest="onVHEmployee"
+                                                           maxLength="8">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           value="{mPRDetail>/KW_POS_4}" placeholder="ตำแหน่งวิชาการ"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/NAME_4}" placeholder="ชื่อ"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/CL_PERSN}"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           value="{mPRDetail>/LASTNAME_4}" placeholder="นามสกุล"
+                                                           maxLength="55">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL3 L3 M3 S6"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                    <Input type="Text" showValueHelp="false"
+                                                           enabled="{mVisibleControl>/position/enabled}"
+                                                           value="{mPRDetail>/GE_POS_4}" placeholder="ตำแหน่งบริหาร"
+                                                           visible="true" width="auto" valueHelpOnly="false"
+                                                           required="false" valueStateText="Invalid entry"
+                                                           maxLength="70">
+                                                        <layoutData>
+                                                            <layout:GridData span="XL2 L2 M2 S12"/>
+                                                        </layoutData>
+                                                    </Input>
+                                                </form:fields>
+                                            </form:FormElement>
+                                            <form:title>
+                                                <core:Title text="{i18n>DirectOfficer}" level="Auto"/>
+                                            </form:title>
+                                        </form:FormContainer>
+                                    </form:formContainers>
+                                    <form:layout>
+                                        <form:ResponsiveGridLayout labelSpanXL="12" labelSpanL="12" labelSpanM="12"
+                                                                   labelSpanS="12" adjustLabelSpan="false"
+                                                                   emptySpanXL="0"
+                                                                   emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                                   columnsXL="1" columnsL="1" columnsM="1"
+                                                                   singleContainerFullSize="false"/>
+                                    </form:layout>
+                                </form:Form>
+                            </layout:VerticalLayout>
+                        </uxap:blocks>
+                        <uxap:moreBlocks/>
+                        <uxap:actions/>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+                <uxap:customAnchorBarButton/>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+            <OverflowToolbar width="100%" height="46px" design="Auto" enabled="true" visible="true">
+                <content>
+                    <ToolbarSpacer width=""/>
+                    <Button text="Approve" type="Accept" iconFirst="true" width="auto" enabled="true" visible="true"
+                            iconDensityAware="false"/>
+                    <Button text="Reject" type="Reject" iconFirst="true" width="auto" enabled="true" visible="true"
+                            iconDensityAware="false"/>
+                    <OverflowToolbarButton text="Action" type="Default" icon="sap-icon://action" iconFirst="true"
+                                           width="auto" enabled="true" visible="true" iconDensityAware="false"/>
+                </content>
+            </OverflowToolbar>
+        </uxap:footer>
+    </uxap:ObjectPageLayout>
+</mvc:View>

@@ -1,0 +1,97 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" controllerName="com.cu.s4hana.zlpuba007.controller.PrintPo" xmlns:uxap="sap.uxap" xmlns="sap.m" xmlns:layout="sap.ui.layout"
+	xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+	<uxap:ObjectPageLayout showTitleInHeaderContent="true" showHeaderContent="true" showAnchorBar="true" showFooter="false"
+		subSectionLayout="TitleOnTop">
+		<uxap:headerContent/>
+		<uxap:headerTitle>
+			<uxap:ObjectPageHeader objectTitle="{i18n>Label.PrintPo}" objectSubtitle="" headerDesign="Light" objectImageShape="Square"
+				isObjectIconAlwaysVisible="false" isObjectTitleAlwaysVisible="false" isObjectSubtitleAlwaysVisible="false" isActionAreaAlwaysVisible="true">
+				<uxap:actions>
+					<Button id="idBtnPrint" text="{i18n>Button.Print}" type="Emphasized" iconFirst="true" width="auto" enabled="false" visible="true" press="handlePrintPress"
+						iconDensityAware="false"/>
+				</uxap:actions>
+				<uxap:breadCrumbsLinks/>
+				<uxap:navigationBar/>
+			</uxap:ObjectPageHeader>
+		</uxap:headerTitle>
+		<uxap:sections>
+			<uxap:ObjectPageSection showTitle="false" title="{i18n>Label.Selection}" titleUppercase="false" visible="true">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title="" mode="Expanded">
+						<uxap:blocks>
+							<form:Form width="100%" editable="true" visible="true">
+								<form:title/>
+								<form:formContainers>
+									<form:FormContainer visible="true">
+										<form:formElements>
+											<form:FormElement visible="true">
+												<form:label>
+													<Label text="{i18n>Label.PoNo}" design="Standard" width="100%" required="false" textAlign="Begin" textDirection="Inherit" visible="true"/>
+												</form:label>
+												<form:fields>
+													<MultiInput id="idPoNo" type="Text" valueHelpRequest="onVHPo" showValueHelp="true" enabled="true" visible="true"
+														width="auto" valueHelpOnly="false" required="false" change="onChangePoNo"
+														maxLength="{ path : '/#F4Po/EBELN/@maxLength' , formatter : '.formatter.parseInt' }">
+														<layoutData>
+															<layout:GridData span="XL5 L5 M6 S10"/>
+														</layoutData>
+													</MultiInput>
+													<Button text="{i18n>Label.ClearPoList}" press="handleClearPoList" tooltip="{i18n>Label.ClearPoList}">
+														<layoutData>
+															<layout:GridData span="XL1 L1 M2 S2"/>
+														</layoutData>
+													</Button>
+												</form:fields>
+											</form:FormElement>
+											<form:FormElement visible="true">
+												<form:label>
+													<Label text="{i18n>Label.PurchasingType}" design="Standard" width="100%" required="false" textAlign="Begin" textDirection="Inherit"
+														visible="true"/>
+												</form:label>
+												<form:fields>
+													<VBox>
+														<RadioButtonGroup valueState="None">
+															<buttons>
+																<RadioButton id="idPoType1" groupName="GroupA" text="{i18n>Label.PoType1}" selected="true"/>
+																<RadioButton id="idPoType2" groupName="GroupA" text="{i18n>Label.PoType2}"/>
+															</buttons>
+														</RadioButtonGroup>
+														<core:HTML content="&lt;hr&gt;"/>
+													</VBox>
+												</form:fields>
+											</form:FormElement>
+											<form:FormElement visible="true">
+												<form:label>
+													<Label text="" design="Standard" width="100%" required="false" textAlign="Begin" textDirection="Inherit" visible="true"/>
+												</form:label>
+												<form:fields>
+													<CheckBox id="idNoDisplayEmployeeName" text="{i18n>Label.NoDisplayEmployeeName}"/>
+												</form:fields>
+											</form:FormElement>
+											<!--CH02: Insert Start-->
+											<form:FormElement visible="true">
+												<form:label>
+													<Label text="" design="Standard" width="100%" required="false" textAlign="Begin" textDirection="Inherit" visible="true"/>
+												</form:label>
+												<form:fields>
+													<CheckBox id="idNoDisplayBankAcc" text="{i18n>Label.NoDisplayBankAcc}"/>
+												</form:fields>
+											</form:FormElement>
+											<!--CH02: Insert End-->
+										</form:formElements>
+										<form:title/>
+									</form:FormContainer>
+								</form:formContainers>
+								<form:layout>
+									<form:ResponsiveGridLayout adjustLabelSpan="false" columnsL="1" columnsM="1" labelSpanL="3" labelSpanM="3" labelSpanS="12" emptySpanL="3"
+										emptySpanM="1" emptySpanS="0"/>
+								</form:layout>
+							</form:Form>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+		<uxap:footer/>
+	</uxap:ObjectPageLayout>
+</mvc:View>
