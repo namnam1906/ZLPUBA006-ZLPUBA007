@@ -1,0 +1,12 @@
+FUNCTION zlpu_r007_attach_po_form .
+*"----------------------------------------------------------------------
+*"*"Local interface:
+*"  IMPORTING
+*"     VALUE(IS_PO_PDF) TYPE  ZSPUBA032 OPTIONAL
+*"  EXPORTING
+*"     VALUE(ES_PO_PDF) TYPE  ZSPUBA032
+*"----------------------------------------------------------------------
+
+  es_po_pdf = is_po_pdf.
+
+ENDFUNCTION.

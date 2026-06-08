@@ -1,0 +1,118 @@
+FUNCTION zlpu_u007_attach_po_form.
+*"----------------------------------------------------------------------
+*"*"Local interface:
+*"  IMPORTING
+*"     VALUE(IS_PO_PDF) TYPE  ZSPUBA032 OPTIONAL
+*"  EXPORTING
+*"     VALUE(RETURN) TYPE  BAPIRET2_T
+*"----------------------------------------------------------------------
+* Author        : Tunpisith V.
+* Date          : 25.08.2020
+* Search term   : CHG-01
+* Description   : -Add field for new checkbox submit to zlpufm003
+*                 (not showing bank account)
+*"----------------------------------------------------------------------
+
+  DATA: ls_selscreen TYPE rsparams,
+        lt_selscreen TYPE TABLE OF rsparams,
+        lt_return    TYPE bapiret2_t,
+        lv_arc_id    TYPE saearchivi,
+        lv_arc_docid TYPE saeardoid,
+        lv_file_size TYPE so_doc_siz,
+        ls_attach    TYPE zsba_attachment,
+        lv_xstring   TYPE xstring.
+
+  SPLIT is_po_pdf-po_list AT ':' INTO TABLE DATA(lt_po_list).
+
+  LOOP AT lt_po_list INTO DATA(ls_po_list).
+    CLEAR: lt_selscreen,
+           ls_attach,
+           lv_arc_id,
+           lv_arc_docid,
+           lv_file_size,
+           lt_return.
+
+    CLEAR ls_selscreen.
+    ls_selscreen-selname = 'S_EBELN'.
+    ls_selscreen-sign    = 'I'.
+    ls_selscreen-option  = 'EQ'.
+    ls_selscreen-low     = ls_po_list.
+    APPEND ls_selscreen TO lt_selscreen.
+
+
+    IF is_po_pdf-po_type = '1'.
+      CLEAR ls_selscreen.
+      ls_selscreen-selname = 'R1'.
+      ls_selscreen-sign = 'I'.
+      ls_selscreen-option = 'EQ'.
+      ls_selscreen-low = 'X'.
+      APPEND ls_selscreen TO lt_selscreen.
+
+      CLEAR ls_selscreen.
+      ls_selscreen-selname = 'R2'.
+      ls_selscreen-sign = 'I'.
+      ls_selscreen-option = 'EQ'.
+      ls_selscreen-low = ''.
+      APPEND ls_selscreen TO lt_selscreen.
+    ELSEIF is_po_pdf-po_type = '2'.
+      CLEAR ls_selscreen.
+      ls_selscreen-selname = 'R1'.
+      ls_selscreen-sign = 'I'.
+      ls_selscreen-option = 'EQ'.
+      ls_selscreen-low = ''.
+      APPEND ls_selscreen TO lt_selscreen.
+
+      CLEAR ls_selscreen.
+      ls_selscreen-selname = 'R2'.
+      ls_selscreen-sign = 'I'.
+      ls_selscreen-option = 'EQ'.
+      ls_selscreen-low = 'X'.
+      APPEND ls_selscreen TO lt_selscreen.
+    ENDIF.
+
+    CLEAR ls_selscreen.
+    ls_selscreen-selname = 'P_POSCB'.
+    ls_selscreen-sign = 'I'.
+    ls_selscreen-option = 'EQ'.
+    ls_selscreen-low = is_po_pdf-no_display.
+    APPEND ls_selscreen TO lt_selscreen.
+
+    CLEAR ls_selscreen.
+    ls_selscreen-selname = 'P_FIORI'.
+    ls_selscreen-sign = 'I'.
+    ls_selscreen-option = 'EQ'.
+    ls_selscreen-low = 'X'.
+    APPEND ls_selscreen TO lt_selscreen.
+
+    "**>>CHG-01: Insert Start
+    CLEAR ls_selscreen.
+    ls_selscreen-selname = 'P_BANKCB'.
+    ls_selscreen-sign = 'I'.
+    ls_selscreen-option = 'EQ'.
+    ls_selscreen-low = is_po_pdf-no_bankacc.
+    APPEND ls_selscreen TO lt_selscreen.
+    "**>>CHG-01: Insert End
+
+    SUBMIT zlpufm003 WITH SELECTION-TABLE lt_selscreen AND RETURN.
+    IMPORT lv_po_pdf = lv_xstring FROM MEMORY ID 'PO_PDF'.
+
+    ls_attach-key_value    = ls_po_list.
+    ls_attach-mimetype     = 'application/pdf'.
+    ls_attach-file_name    = ls_po_list && '_' && sy-datum && '_' && sy-uzeit && '.pdf'.
+    ls_attach-file_content = lv_xstring.
+
+    zcl_bcba_utils=>create_attach(
+      EXPORTING
+        im_sap_obj     = 'BUS2012'
+        im_ar_obj      = 'ZLMM002'
+        is_attach      = ls_attach
+      IMPORTING
+        ex_arc_id      = lv_arc_id
+        ex_arc_docid   = lv_arc_docid
+        ex_file_size   = lv_file_size
+        et_return      = lt_return ).
+    IF lt_return IS NOT INITIAL.
+      APPEND LINES OF lt_return TO return.
+    ENDIF.
+  ENDLOOP.
+ENDFUNCTION.

@@ -1,0 +1,155 @@
+FUNCTION zlpu_r006_pr_form.
+*"----------------------------------------------------------------------
+*"*"Local interface:
+*"  IMPORTING
+*"     VALUE(IS_INPUT) TYPE  ZSPUBA026 OPTIONAL
+*"     VALUE(IM_ATTACH) TYPE  FLAG OPTIONAL
+*"  TABLES
+*"      ET_OTF STRUCTURE  ITCOO OPTIONAL
+*"----------------------------------------------------------------------
+
+  DATA: lr_pr TYPE RANGE OF eban-banfn.
+  DATA: lv_r1, lv_r2, lv_r3.
+  DATA: lv_reason TYPE char2048.
+  DATA: BEGIN OF gs_memory,
+          banfn   TYPE eban-banfn,
+          bsart   TYPE eban-bsart,
+          crdate  TYPE ztwf_pr_log-crdate,
+          sign_10 TYPE ztbc_signature-esign,
+          sign_11 TYPE ztbc_signature-esign,
+          sign_12 TYPE ztbc_signature-esign,
+          sign_13 TYPE ztbc_signature-esign,
+          nam1    TYPE pa0002-pernr,
+          nam2    TYPE pa0002-pernr,
+          nam3    TYPE pa0002-pernr,
+          nam4    TYPE pa0002-pernr,
+        END OF gs_memory.
+
+  sy-langu = '2'.
+
+  SELECT SINGLE *
+    FROM ztmm_prform_tmp
+    INTO @DATA(lw_prform)
+    WHERE print_no = @is_input-print_no.
+
+
+* deserialize JSON string json into internal table lt_flight doing camelCase to ABAP like field name mapping
+  /ui2/cl_json=>deserialize(
+    EXPORTING
+      json        = lw_prform-key_value
+      pretty_name = /ui2/cl_json=>pretty_mode-camel_case
+    CHANGING
+      data        = lr_pr ).
+
+
+  CHECK lr_pr IS NOT INITIAL.
+
+
+  CASE lw_prform-pr_type.
+    WHEN 'PU'.
+      lv_r1 = 'X'.
+    WHEN 'HI'.
+      lv_r2 = 'X'.
+    WHEN 'RE'.
+      lv_r3 = 'X'.
+  ENDCASE.
+
+  lv_reason = lw_prform-zreason.
+
+  SELECT * UP TO 1 ROWS
+    FROM eban
+    INTO @DATA(lw_eban)
+    WHERE banfn IN @lr_pr
+      AND loekz = @space
+    ORDER BY PRIMARY KEY.
+  ENDSELECT.
+
+  "<DEL BY CH01
+*  IF lw_prform-edate_flag IS NOT INITIAL.
+*    gs_memory-crdate  = lw_prform-print_date.
+*  ENDIF.
+  ">DEL BY CH01
+
+  "<BOI CH01
+*  IF lw_prform-edate_flag IS NOT INITIAL.
+*    gs_memory-crdate  = lw_prform-print_date.
+*  ELSE.
+  IF lw_eban-bsart = '1A31' AND lw_eban-zzmm_no_esign IS INITIAL.
+    IF lw_eban-frgzu = 'XXXX'.
+      SELECT * UP TO 1 ROWS
+       FROM ztwf_pr_log
+       INTO @DATA(lw_log)
+       WHERE banfn  IN @lr_pr
+         AND frgco = '13'
+       ORDER BY crdate DESCENDING, crtime DESCENDING.
+      ENDSELECT.
+
+      gs_memory-crdate  = lw_log-crdate.
+    ENDIF.
+  ENDIF.
+*  ENDIF.
+  ">EOI CH01
+
+
+  gs_memory-bsart   = lw_eban-bsart.
+  gs_memory-sign_10 = lw_prform-esign_1.
+  gs_memory-sign_11 = lw_prform-esign_2.
+  gs_memory-sign_12 = lw_prform-esign_3.
+  gs_memory-sign_13 = lw_prform-esign_4.
+  gs_memory-nam1    = lw_prform-pernr_1.
+  gs_memory-nam2    = lw_prform-pernr_2.
+  gs_memory-nam3    = lw_prform-pernr_3.
+  gs_memory-nam4    = lw_prform-pernr_4.
+  EXPORT gs_memory TO MEMORY ID 'ZLPUFM001'.
+
+  EXPORT reason     FROM lw_prform-zreason
+*         print_date FROM lw_prform-print_date
+         TO MEMORY ID 'ZLPUBA006'.
+
+  SUBMIT zlpufm001 AND RETURN
+    WITH s_banfn  IN lr_pr
+    WITH r1       EQ lv_r1
+    WITH r2       EQ lv_r2
+    WITH r3       EQ lv_r3
+    WITH p_sub    EQ lw_prform-zto
+    WITH p_r1     EQ lw_prform-reason
+*    WITH p_r11    EQ lv_reason
+    WITH c1       EQ lw_prform-attach_flag
+    WITH c2       EQ lw_prform-apvrpt_flag
+    WITH pa_apd   EQ lw_prform-print_date
+    WITH p_nam11  EQ lw_prform-pernr_1
+    WITH t13_txt1 EQ lw_prform-kw_pos_1
+    WITH t13_txt2 EQ lw_prform-ge_pos_1
+    WITH t13_txt3 EQ lw_prform-name_1
+    WITH t13_txt4 EQ lw_prform-lastname_1
+    WITH p_nam21  EQ lw_prform-pernr_2
+    WITH t10_txt1 EQ lw_prform-kw_pos_2
+    WITH t10_txt2 EQ lw_prform-ge_pos_2
+    WITH t10_txt3 EQ lw_prform-name_2
+    WITH t10_txt4 EQ lw_prform-lastname_2
+    WITH p_nam31  EQ lw_prform-pernr_3
+    WITH t11_txt1 EQ lw_prform-kw_pos_3
+    WITH t11_txt2 EQ lw_prform-ge_pos_3
+    WITH t11_txt3 EQ lw_prform-name_3
+    WITH t11_txt4 EQ lw_prform-lastname_3
+    WITH p_nam41  EQ lw_prform-pernr_4
+    WITH t12_txt1 EQ lw_prform-kw_pos_4
+    WITH t12_txt2 EQ lw_prform-ge_pos_4
+    WITH t12_txt3 EQ lw_prform-name_4
+    WITH t12_txt4 EQ lw_prform-lastname_4
+    WITH p_attach EQ im_attach
+    WITH p_fiori  EQ 'X'
+    WITH p_prform EQ 'X'.
+
+
+  IMPORT t_totf TO et_otf FROM MEMORY ID 'PR_FORM'.
+  FREE MEMORY ID 'PR_FORM'.
+  FREE MEMORY ID 'ZLPUBA006'.
+
+
+  IF lw_prform-attached IS INITIAL.
+    DELETE FROM ztmm_prform_tmp
+           WHERE print_no = is_input-print_no.
+  ENDIF.
+
+ENDFUNCTION.

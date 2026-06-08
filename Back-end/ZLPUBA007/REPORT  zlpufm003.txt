@@ -1,0 +1,5360 @@
+*&---------------------------------------------------------------------*
+*& ABAP Name  : ZLPUFM003
+*& Created by : Anuwat Anusonsirisak
+*& Created on : 03.05.2007
+*& Version    : 1.0
+*& Transport  : DEVK901120
+*& Package ID : ZDEV
+*& Description: รายงานใบสั่งซื้อ/จ้าง
+*&---------------------------------------------------------------------*
+*&  Change-ID      Date        Description/Reason for Change           *
+*&---------------------------------------------------------------------*
+*&    CHG-01    12.10.2007     Fix header and detail layout when PO
+*&                             refer to multiple PRs / WORAWIT
+*&    CHG-02    17.10.2007     การดึงข้อความจาก pr ให้ดึงเฉพาะ B05 , B06
+*&    CHG-03    13.11.2007     ทำการดึงข้อมูลทุกบรรทัดรายการ/Kanittha
+*&    CHG-04    21.05.2008     เปลี่ยนรักษาราชการแทน/ปฏิบัติราชการแทน >>> รักษาการแทน/ปฏิบัติการแทน
+*&    CHG-05    27.06.2008     Add field
+*&    CHG-06    20.06.2013     แก้ไขการแสดง เลขประจำตัวผู้เสียภาษี /nattaphon
+*&    CHG-07    31.07.2013     แก้ไขการแสดง กำหนดส่งงาน /nattaphon
+*&    CHG-08    19.12.2013     เพิ่มการเลือกแสดงผู้ติดต่อ /nattaphon
+*&    CHG-09    12.05.2016     1)Add parameter G_FORM = R1
+*&                             2)Add text in footer "ครบกำหนดส่งมอบภายในวันที่"
+*&                             3)Delete wording "บาท"
+*&---------------------------------------------------------------------*
+*& Search Term        : CHG-06
+*& Change By          : Sumintra P.
+*& Change Date        : 02/10/2012
+*& Change Description : - Change conversion lower/upper case letters
+*&                      - Display text ID as maintenance
+*&                      - Read text ID 'LTXT' to ใบสั่งงาน
+*&                      - Fixed describe line type
+*&                      - Fixed one-time vendor
+*&                      - Get Name & Address of contract from ZTMMDEPARTMENT
+*&                      - Read all line in text ID 'F63'
+*&                      - Filter PO delete flag all items
+*&---------------------------------------------------------------------*
+*& Search Term        : CHG-10
+*& Change By          : Aekarach I. (Oasis Consulting)
+*& Change Date        : 27/04/2017
+*& Transport Request  : DEVK929024
+*& Change Description : - ปรับแก้เพื่อให้ User SASIN ใช้งานได้
+*&---------------------------------------------------------------------*
+*- Search Term        : CHG-11
+*- Change By          : Bundit A. (Oasis Consulting)
+*- Change Date        : 04.08.2017
+*- Transport Request  : DEVK929802
+*- Change Description : 1) ปรับแก้ Logic ในการตรวจสอบ Dept ว่าเป็น Sasin หรือ CU
+*&---------------------------------------------------------------------*
+*&    CHG-12    16.03.2018     แก้ไขการแสดงข้อมูลผู้ปฏิบัติการแทน /Tunpisith
+*------------------------------------------------------------------------
+*----------------------------------------------------------------------*
+* Modification History
+*----------------------------------------------------------------------*
+*& Project       : S/4 HANA 1809 Upgrade Project
+*& Changed Date  : 19.03.2019
+*& Changed By    : Patsita J.
+*& Transport No. : S4DK900017
+*& Search Term   : CU_UPG_1809
+*& Description   : ATC
+*----------------------------------------------------------------------*
+*& Project       : S/4 HANA 1809 Upgrade Project
+*& Changed Date  : 09.08.2019
+*& Changed By    : Pongwisit P.
+*& Transport No. :
+*& Search Term   : FIORI-01
+*& Description   : Add FIORI PO form logic
+*----------------------------------------------------------------------*
+*& Project       : S/4 HANA 1809 Upgrade Project
+*& Changed Date  : 22.08.2019
+*& Changed By    : Patchanok P.
+*& Transport No. :
+*& Search Term   : CHG-15
+*& Description   : Bug fixing of getting name
+*----------------------------------------------------------------------*
+*& Changed Date  : 06.02.2020
+*& Changed By    : SDS-IAM (Pannee S.)
+*& Transport No. : S4DK907625
+*& Search Term   : INC0007082
+*& Description   : fix for display signature on PO form
+*----------------------------------------------------------------------*
+*& Changed Date  : 14.02.2020
+*& Changed By    : SDS-IAM (Pagon T.)
+*& Transport No. : S4DK907689
+*& Search Term   : INC0007354
+*& Description   : ZLPUFM003 T13_txt2 up length
+*----------------------------------------------------------------------*
+*& Changed Date  : 26.02.2020
+*& Changed By    : SDS-IAM (Pannee S.)
+*& Transport No. : S4DK907880
+*& Search Term   : INC0007082
+*& Description   : Merge INC0007082 & INC0007354
+*----------------------------------------------------------------------*
+*& Changed Date  : 09.03.2020
+*& Changed By    : SDS-IAM (Pagon T.)
+*& Transport No. : S4DK908047
+*& Search Term   : INC0007778
+*& Description   : Fix Double Printing
+*----------------------------------------------------------------------*
+*& Changed Date  : 18.03.2020
+*& Changed By    : SDS-IAM (Pagon T.)
+*& Transport No. : S4DK908183
+*& Search Term   : INC0008051
+*& Description   : Fix lost signature
+*----------------------------------------------------------------------*
+*&    CHG-16    26.08.2020     เพิ่ม checkbox ไม่แสดงบัญชีเงินฝากธนาคาร, แก้form /Tunpisith
+*------------------------------------------------------------------------
+*& Changed Date  : 18.03.2020
+*& Changed By    : SDS-IAM (Pagon T.)
+*& Transport No. : S4DK909622
+*& Search Term   : INC0009132
+*& Description   : Fix sign name
+*----------------------------------------------------------------------*
+*& Changed Date  : 18.12.2020
+*& Changed By    : SDS-IAM (Pagon T.)
+*& Transport No. : S4DK910283
+*& Search Term   : INC0009132-2
+*& Description   : Fix sign name
+*----------------------------------------------------------------------*
+*& Changed Date  : 04..032021
+*& Changed By    : Sirirat S.
+*& Transport No. : S4DK910894
+*& Search Term   : CHG-17
+*& Description   : add location to address
+*----------------------------------------------------------------------*
+*& Changed Date  : 18.05.2021
+*& Changed By    : Nattariyaporn J.
+*& Transport No. :
+*& Search Term   : CHG-018
+*& Description   : Fix bank logic
+*----------------------------------------------------------------------*
+*& Changed Date  : 01.07.2022
+*& Changed By    : Suraphan P.
+*& Transport No. :
+*& Search Term   : CHG-19
+*& Description   : Add option to select template
+*----------------------------------------------------------------------*
+* S4DK915309  04.07.2023  CHG-20  Tunpisith.V
+*                         Change display format for fiori PDF
+*----------------------------------------------------------------------*
+* S4DK916068  28.02.2024  CHG-21  Jarinya V.
+*                         Fix tel, tax, email of vendor
+*----------------------------------------------------------------------*
+* S4DK916112  08.03.2024  CHG-22  Jarinya V.
+*                         Fix ตัวเลขส่วนภายใต้เงื่อนไขแสดงไม่ตรงข้อ
+*----------------------------------------------------------------------*
+* S4DK916923  24.10.2024  CHG-23 Jarinya V.
+*                                                                เพิ่มเงื่อนไขการดึงตำแหน่งจาก PA9001
+*----------------------------------------------------------------------*
+* S4DK916963  04.11.2024  CHG-24 Jarinya V.
+*                                                                ตรวจสอบบรรทัดผู้มีอำนาจสั่งการใน ztmm_rel_user
+*----------------------------------------------------------------------*
+* S4DK917173  08.01.2024  CHG-26  Tunpisith.V
+*             Change tax selection logic from J_1BBRANCH-STCD1
+*----------------------------------------------------------------------*
+*& Changed Date  : 13.02.2025
+*& Changed By    : Piyanon M.
+*& Transport No. : S4DK917384
+*& Search Term   : CHG-27
+*& Description   : Add web application url QR Code to form
+*----------------------------------------------------------------------*
+
+REPORT  zlpufm003.
+
+*----------------------------------------------------------------------*
+*   T A B L E S
+*----------------------------------------------------------------------*
+TABLES: ekko, stxh,adrc,j_1bbranch,
+        ztmmpurchgroup,lfa1,nast,ekpo,
+        arc_params,toa_dara,tnapr.
+
+*----------------------------------------------------------------------*
+* Types
+*----------------------------------------------------------------------*
+TYPES: BEGIN OF ty_pernr,
+         frggr       TYPE ztmm_rel_user-frggr,
+         frgco       TYPE ztmm_rel_user-frgco,
+         ekgrp       TYPE ztmm_rel_user-ekgrp,
+         fistl       TYPE ztmm_rel_user-fistl,
+         geber       TYPE ztmm_rel_user-geber,
+         xubname     TYPE ztmm_rel_user-xubname,
+
+         pernr       TYPE ztmm_rel_user-pernr,
+         endda       TYPE ztmm_rel_user-endda,
+         begda       TYPE ztmm_rel_user-begda,
+         pernr_owner TYPE ztmm_rel_user-pernr_owner,
+         name_owner  TYPE ztmm_rel_user-name_owner,
+
+         crdate      TYPE ztmm_rel_user-crdate,
+         crtime      TYPE ztmm_rel_user-crtime,
+         cruser      TYPE ztmm_rel_user-cruser,
+         chdate      TYPE ztmm_rel_user-chdate,
+         chtime      TYPE ztmm_rel_user-chtime,
+         chuser      TYPE ztmm_rel_user-chuser,
+       END OF ty_pernr.
+
+*-> Begin: INC0009132-2(-+)
+*TYPES: BEGIN OF ty_pernr_deli,
+*         pernr       TYPE ztmm_rel_user-pernr,
+*         fistl       TYPE ztmm_rel_user-fistl,
+*         geber       TYPE ztmm_rel_user-geber,
+*         xubname     TYPE ztmm_rel_user-xubname,
+*         ekgrp       TYPE ztmm_rel_user-ekgrp,
+*         pernr_owner TYPE ztmm_rel_user-pernr_owner,
+*       END OF ty_pernr_deli.
+
+TYPES ty_pernr_deli TYPE ztmm_rel_user.
+*<- End: INC0009132-2(-+)
+
+TYPES: BEGIN OF ty_sig_name_info,
+         pernr       TYPE ztbc_signature-pernr,
+         vorna_sig   TYPE ztbc_signature-vorna,
+         nachn_sig   TYPE ztbc_signature-nachn,
+         vorsw_sig   TYPE ztbc_signature-vorsw,
+         anrlt_sig   TYPE ztbc_signature-anrlt,
+
+         vorna_pa    TYPE pa0002-vorna,
+         nachn_pa    TYPE pa0002-nachn,
+         vorsw_pa    TYPE pa0002-vorsw,
+         titl2_pa    TYPE pa0002-titl2,
+         knznm       TYPE pa0002-knznm,
+
+         esign       TYPE ztbc_signature-esign,
+         stext       TYPE pa9001-stext,
+         tline       TYPE ztbc_signature-tline,
+         subty       TYPE pa9001-subty,                   "CHG-23: Insert
+
+         plans_9001  TYPE pa9001-plans,
+         plans_0001  TYPE pa0001-plans,
+         anrlt_t522t TYPE t522t-anrlt,
+       END OF ty_sig_name_info.
+
+TYPES: BEGIN OF ty_sig_name_deli_info,
+         pernr       TYPE ztbc_signature-pernr,
+         vorna_sig   TYPE ztbc_signature-vorna,
+         nachn_sig   TYPE ztbc_signature-nachn,
+         vorsw_sig   TYPE ztbc_signature-vorsw,
+         anrlt_sig   TYPE ztbc_signature-anrlt,
+
+         vorna_pa    TYPE pa0002-vorna,
+         nachn_pa    TYPE pa0002-nachn,
+         vorsw_pa    TYPE pa0002-vorsw,
+         titl2_pa    TYPE pa0002-titl2,
+
+         esign       TYPE ztbc_signature-esign,
+         stext       TYPE pa9001-stext,
+         tline       TYPE ztbc_signature-tline,
+         subty       TYPE pa9001-subty,
+
+         plans_9001  TYPE pa9001-plans,
+         plans_0001  TYPE pa0001-plans,
+         anrlt_t522t TYPE t522t-anrlt,
+       END OF ty_sig_name_deli_info.
+
+*--------------------------------------------------------------------
+* Data declaration
+*--------------------------------------------------------------------
+DATA: g_subj           TYPE string,
+      g_txt            TYPE string,
+      g_txt2           TYPE string,
+      g_page           TYPE i,
+      v_flag_name      TYPE boolean,            "INS CHG-15
+      gv_fullname      TYPE string,             "INS CHG-15
+      gv_template(50)  TYPE c,             "<<<CHG-19: Insert
+      v_flag_name_deli TYPE boolean,            "INS CHG-15
+      gv_qrcode        TYPE string.             " +CHG-27
+*      p_name type string.
+DATA: retco         LIKE sy-subrc,
+      lvs_recipient LIKE swotobjid,    "Internet
+      lvs_sender    LIKE swotobjid,    "Internet
+      wa_screen     TYPE c,
+      wa_program    LIKE sy-repid,  "Programm
+      wa_dialog     TYPE c,         "Kz. POP-UP
+      wa_device(10) TYPE c,         "Ausgabemedium
+      wa_spras      TYPE spras,
+      wa_form       LIKE tnapr-fonam.
+
+DATA: repeat(1) TYPE c.
+DATA: cnt_read TYPE i,
+      cnt_r    TYPE i,
+      cnt_inx  TYPE i.
+DATA v_fieldcount TYPE i.
+DATA: wa_line TYPE  tline.
+DATA:v_r1(1),
+     v_r2(1),
+     v_r3(1).
+DATA: gv_ebeln   TYPE ekko-ebeln,                                "CHG-06
+      gv_sign_10 TYPE ztbc_signature-esign,
+      gv_auth    TYPE boolean.                                   "INS CHG-15
+
+DATA: gv_attach TYPE c,       "INS CHG-15
+      gt_tstotf TYPE tsfotf.  "INS CHG-15
+
+
+DATA: t13_txt1 TYPE c LENGTH 55,
+*      t13_txt2 TYPE c LENGTH 65, "<-INC0007354(-)
+      t13_txt2 TYPE c LENGTH 95,  "<-INC0007354(+)
+      t13_txt3 TYPE c LENGTH 55,
+      t13_txt4 TYPE c LENGTH 55.
+*--------------------------------------------------------------------*
+* I N T E R N A L T A B L E S
+*--------------------------------------------------------------------*
+"ใช้เก็บข้อมูลในส่วนหัวรายงาน
+DATA: BEGIN OF gt_header OCCURS 0,
+
+        ebeln             LIKE ekko-ebeln,
+        bsart             LIKE ekko-bsart,
+        ekorg             LIKE ekko-ekorg,
+        ekgrp             LIKE ekko-ekgrp,
+        fistl             LIKE ekkn-fistl,              "INS CHG-15
+        geber             LIKE ekkn-geber,              "INS CHG-15
+        lifnr             LIKE ekko-lifnr,
+        aedat             LIKE ekko-aedat,
+        ihrez             LIKE ekko-ihrez,
+        adrnr             LIKE ekko-adrnr,
+        verkf             TYPE ekko-verkf,  "Add S4
+        telf1             TYPE ekko-telf1,  "Add S4
+        frgke             TYPE ekko-frgke,  "Add S4
+        knumv             TYPE ekko-knumv,  "Add S4
+        unsez             TYPE ekko-unsez,
+        frgzu             TYPE ekko-frgzu,  "Add S4
+        zmmapp_vorna      TYPE ekko-zmmapp_vorna,  "Add S4
+        zmmapp_nach2      TYPE ekko-zmmapp_nach2,  "Add S4
+        zmmapp_stext      TYPE ekko-zmmapp_stext,  "Add S4
+        zmmacto_vorna     TYPE ekko-zmmacto_vorna, "Add S4
+        zmmacto_nach2     TYPE ekko-zmmacto_nach2, "Add S4
+        zmmacto_stext     TYPE ekko-zmmacto_stext, "Add S4
+        zzmm_no_esign     TYPE ekko-zzmm_no_esign,      "INS CHG-15
+        zzmm_j_1tpbupl    TYPE ekko-zzmm_j_1tpbupl,     "INS CHG-15
+        werks             TYPE ekpo-werks,              "INS CHG-15
+
+        knttp             TYPE ekpo-knttp,              "INS-INC0007082
+
+        t13_txt1          TYPE c LENGTH 55,
+*        t13_txt2          TYPE c LENGTH 65,  "<-INC0007354(-)
+        t13_txt2          TYPE c LENGTH 95,   "<-INC0007354(+)
+        t13_txt3          TYPE c LENGTH 55,
+        t13_txt4          TYPE c LENGTH 55,
+        addr              LIKE t024-smtp_addr,
+        tel               LIKE t024-tel_number,
+        fax               LIKE t024-telfx,
+        vname(70),"adrd-Name1,2
+        term              LIKE t052u-text1,
+        txt1              LIKE tline-tdline, "F23
+        txt2              LIKE tline-tdline, "F24
+        txt2_2            LIKE tline-tdline, "F24
+        txt3              LIKE tline-tdline, "F25
+        txt3_2            LIKE tline-tdline, "F25
+        txt4              LIKE tline-tdline, "F21 change to F83
+        txt5              LIKE tline-tdline, "F17
+        txt6              LIKE tline-tdline, "F28
+        txt55             LIKE tline-tdline, "F55
+        txt83             LIKE tline-tdline, "F83
+        pr_b5             LIKE tline-tdline,
+        pr_b6             LIKE tline-tdline,
+*        pr_b7  LIKE tline-tdline,                              "CHG-06
+        pr_b7             TYPE string,                                     "CHG-06
+        type(1)           TYPE c,
+        no_hd(1)          TYPE c, "X Not show header report
+        no_pr(1)          TYPE c, "X have PO item get from multiitem PR
+        cnt               TYPE i,
+        sum               LIKE bseg-dmbtr,
+        vat_sum           LIKE bseg-dmbtr,
+        bef_sum           LIKE bseg-dmbtr,
+        to(15),
+        pr_id             TYPE ekpo-banfn,    "<<< CHG-05: Add filed
+*        vname2(140),"LFA1-Name1+2+3+4                          "CHG-06
+        vname2(160),"Name1+2+3+4                                "CHG-06
+        adress(110),"adrc-STREET+STR_SUPPL3
+        adress2(90),"adrc-CITY1+POST_CODE1
+        tax               LIKE j_1bbranch-stcd1,
+        po_f22            LIKE tline-tdline,
+*        delivery LIKE ztmmpurchgroup-zdelivery_addres,"Delivery adress "CHG-06
+        delivery          TYPE string,                                   "CHG-06
+        pr_b09            LIKE tline-tdline, "b09
+        ihrezf22(30),
+        namsur(100),
+        pur_position1(50),
+*        foottxt(100),                                          "CHG-06
+        foottxt           TYPE string,                                    "CHG-06
+        banfn             TYPE ekpo-banfn,                                "CHG-06
+        bnfpo             TYPE ekpo-bnfpo,                                "CHG-06
+        stcd3             TYPE lfa1-stcd3,  "Add S4
+        bankn             TYPE lfbk-bankn,  "Add S4
+        koinh             TYPE lfbk-koinh,  "Add S4
+        banka             TYPE bnka-banka,  "Add S4
+        po_f18            LIKE tline-tdline, "Add S4
+        po_log_date       TYPE ztwf_po_log-crdate,  "Add S4
+        delivery_name     TYPE string,
+        tel_addr          TYPE adrc-tel_number,
+        fax_addr          TYPE adrc-fax_number,
+        smtp_addr         TYPE adr6-smtp_addr,
+        vadress(70),"adrc-STREET+STR_SUPPL3
+        vadress2(70),"adrc-CITY1+POST_CODE1
+        vadress_tax       LIKE j_1bbranch-stcd1,
+        esign             TYPE ztbc_signature-esign,  "<-INC0008051(+)
+      END OF gt_header.
+"ใช้สำหรับแสดงรายการใน ตาราง
+DATA: BEGIN OF gt_detail OCCURS 0,
+        ebeln      LIKE ekpo-ebeln,
+        ebelp      LIKE ekpo-ebelp,
+        banfn      LIKE ekpo-banfn,
+        knttp      LIKE ekpo-knttp,
+        matnr      LIKE ekpo-matnr,
+        konnr      LIKE ekpo-konnr,
+        txz01      LIKE tline-tdline,
+        menge      LIKE ekpo-menge,
+        meins      LIKE ekpo-meins,
+*        netpr   LIKE ekpo-netpr, "ราคาต่อหน่วย                 "CHG-06
+*        netwr   LIKE ekpo-netwr, "จำนวนเงินรวม                 "CHG-06
+        netpr      TYPE wertv13, "ราคาต่อหน่วย                     "CHG-06
+        netwr      TYPE wertv13, "จำนวนเงินรวม                     "CHG-06
+        geber      LIKE ekpo-geber,
+        fkber      LIKE ekpo-fkber,
+        fistl      LIKE ekpo-fistl,
+        mwskz      LIKE ekpo-mwskz,
+        seq        TYPE i,
+        last       TYPE i,
+*        txz01(255) TYPE c,
+        txz02(255) TYPE c, "CHG-11
+        txz03(255) TYPE c, "CHG-11
+        txz04(255) TYPE c, "CHG-11
+        txz05(255) TYPE c, "CHG-11
+        txz06(255) TYPE c, "CHG-11
+        txz07(255) TYPE c, "CHG-11
+        txz08(255) TYPE c, "CHG-11
+      END OF gt_detail.
+
+"ใส่สำหรับใส่่ข้อความรายการ PO
+DATA: BEGIN OF gt_txt_head OCCURS 0,
+        ebeln LIKE ekpo-ebeln,
+        text  LIKE tline-tdline,
+        seq   TYPE i,
+      END OF gt_txt_head.
+DATA: BEGIN OF gt_txt_item OCCURS 0,
+        ebeln       LIKE ekpo-ebeln,
+        ebelp       LIKE ekpo-ebelp,
+        text        LIKE tline-tdline,
+        seq         TYPE i,
+        txti1(132),
+        txti2(132),
+        txti3(132),
+        txti4(132),
+        txti5(132),
+        txti6(132),
+        txti7(132),
+        txti8(132),
+        txti9(132),
+        txti10(132),
+      END OF gt_txt_item.
+
+"Account Assignment
+DATA: BEGIN OF gt_accass OCCURS 0,
+        ebeln  LIKE ekpo-ebeln,
+        ebelp  LIKE ekpo-ebelp,
+        sakto  LIKE ekkn-sakto,
+        kostl  LIKE ekkn-kostl,
+        geber  LIKE ekkn-geber, "กองทุน
+        gsber  LIKE ekkn-gsber,
+        ge_des LIKE fmfint-beschr,
+        plan1  LIKE setnode-setname, "แผนงานหลัก
+        p1_des LIKE setheadert-descript,
+        plan2  LIKE setnode-setname, "แผนงาน/โครงการ
+        p2_des LIKE setheadert-descript,
+        fkber  LIKE ekkn-fkber, "กิจกรรม
+        fk_des LIKE tfkbt-fkbtx,
+        fistl  LIKE ekkn-fistl, "หน่วยงาน
+        fi_des LIKE fmfctrt-beschr,
+      END OF gt_accass.
+
+
+
+*--------------------------------------------------------------------*
+* S E L E C T I O N S C R E E N D A T A
+*--------------------------------------------------------------------*
+*===========================BLOCK B1==================================
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+*--->PO Number
+PARAMETER: rd1  RADIOBUTTON GROUP rd DEFAULT 'X' USER-COMMAND uc1.                "INS CHG-15
+SELECT-OPTIONS: s_ebeln FOR ekko-ebeln MODIF ID sc1.
+*--->Type PO
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002 .
+PARAMETER: r1  RADIOBUTTON GROUP rad DEFAULT 'X' MODIF ID sc1,
+           r2  RADIOBUTTON GROUP rad MODIF ID sc1.
+* Start of comment: CHG-06
+*  PARAMETER p_name(50) TYPE c .
+*  PARAMETER p_pos(50) TYPE c .
+* End of comment: CHG-06
+* Start of insert: CHG-06
+*SELECTION-SCREEN BEGIN OF LINE.                                 "chg-08 : insert
+*SELECTION-SCREEN COMMENT 1(31) TEXT-t01 FOR FIELD p_name .    "chg-08 : insert
+PARAMETER: p_name TYPE char50 LOWER CASE NO-DISPLAY.
+*PARAMETER: p_cont AS CHECKBOX DEFAULT 'X' .                   "chg-08 : insert
+*SELECTION-SCREEN END OF LINE.                                   "chg-08 : insert
+*SELECTION-SCREEN BEGIN OF LINE.                                 "chg-08 : insert
+*SELECTION-SCREEN COMMENT 1(31) TEXT-t02 FOR FIELD p_pos.     "chg-08 : insert
+PARAMETER  p_pos TYPE char50 LOWER CASE NO-DISPLAY.
+*SELECTION-SCREEN END OF LINE.                                    "chg-08 : insert
+PARAMETER: p_poscb AS CHECKBOX DEFAULT ' ' MODIF ID sc1.
+* End of insert: CHG-06
+SELECTION-SCREEN END OF BLOCK b2.
+** CHG-16: Insert Start
+SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-003.
+PARAMETER: p_bankcb AS CHECKBOX DEFAULT ' ' MODIF ID sc1.
+SELECTION-SCREEN END OF BLOCK b3.
+** CHG-16: Insert Start
+PARAMETER: rd2  RADIOBUTTON GROUP rd.                                             "INS CHG-15
+SELECT-OPTIONS: s_ebeln2 FOR ekko-ebeln NO-EXTENSION NO INTERVALS MODIF ID sc2.   "INS CHG-15
+"<<<CHG-19: Start Insert
+PARAMETER: rd3  RADIOBUTTON GROUP rd.
+SELECT-OPTIONS: s_ebeln3 FOR ekko-ebeln NO-EXTENSION NO INTERVALS MODIF ID sc3.
+">>>CHG-19: End Insert
+SELECTION-SCREEN END OF BLOCK b1.
+
+PARAMETERS p_fiori TYPE flag NO-DISPLAY.                        "INS FIORI-01
+PARAMETERS: p_prform TYPE flag NO-DISPLAY.                      "INS CHG-15
+PARAMETERS: p_attach TYPE flag NO-DISPLAY.                      "INS CHG-15
+
+INITIALIZATION.
+  CLEAR gv_ebeln.                                               "CHG-06
+  CLEAR: p_name, p_pos.  "CHG-08 Insert
+*======================================================================*
+* AT SELECTION-SCREEN
+*======================================================================*
+* Start of comment: CHG-06
+*AT SELECTION-SCREEN ON s_ebeln.
+*  IF s_ebeln[] IS NOT INITIAL.
+*    PERFORM get_value.
+*  ENDIF.
+* End of comment: CHG-06
+  "<<< CHG-08 : Start insert
+
+
+AT SELECTION-SCREEN OUTPUT.
+*  IMPORT gv_ebeln FROM MEMORY ID 'EBELN_NO'.
+*  LOOP AT  SCREEN.
+*    IF screen-name = 'P_CONT'.
+*      p_cont = 'X'.
+*      MODIFY SCREEN.
+*    ENDIF.
+*  ENDLOOP.
+  ">>> CHG-08 : End insert
+*<<< BOI CHG-15
+  LOOP AT SCREEN.
+    IF rd1 = 'X'.
+*      IF screen-group1 = 'SC2'.                           "<<<CHG-19: Delete
+      IF screen-group1 = 'SC2' OR screen-group1 = 'SC3'.   "<<<CHG-19: Insert
+        screen-input = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDIF.
+    IF rd2 = 'X'.
+*      IF screen-group1 = 'SC1'.                           "<<<CHG-19: Delete
+      IF screen-group1 = 'SC1' OR screen-group1 = 'SC3'.   "<<<CHG-19: Insert
+        screen-input = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDIF.
+    "<<<CHG-19: Start Insert
+    IF rd3 = 'X'.
+      IF screen-group1 = 'SC1' OR screen-group1 = 'SC2'.
+        screen-input = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDIF.
+    "<<<CHG-19: End Insert
+  ENDLOOP.
+*>>> EOI CHG-15
+* Start of insert: CHG-06
+AT SELECTION-SCREEN.
+
+  IF s_ebeln[] IS NOT INITIAL.
+    PERFORM get_value.
+  ENDIF.
+* End of insert: CHG-06
+
+*<<< BOI CHG-15
+  IF rd1 IS NOT INITIAL.
+    IF s_ebeln[] IS NOT INITIAL.
+      SELECT ebeln, bsart
+            FROM ekko
+            INTO TABLE @DATA(lt_ekko_temp)
+            WHERE ebeln IN @s_ebeln.
+
+      READ TABLE lt_ekko_temp INTO DATA(ls_ekko_temp) INDEX 1.
+      LOOP AT lt_ekko_temp TRANSPORTING NO FIELDS WHERE bsart <> ls_ekko_temp-bsart.
+        MESSAGE 'ประเภทเอกสารจัดซื้อไม่ตรงกัน ไม่สามารถพิมพ์เอกสารพร้อมกันได้' TYPE 'E'.
+      ENDLOOP.
+    ELSEIF s_ebeln[] IS INITIAL AND sy-ucomm = 'ONLI'.
+      MESSAGE 'กรุณาใส่เลขเอกสารจัดซื้อ' TYPE 'E'.
+    ENDIF.
+  ELSEIF rd2 IS NOT INITIAL.        "<<<CHG-19: Insert "IF rd2 IS NOT INITIAL"
+    IF s_ebeln2[] IS INITIAL AND sy-ucomm = 'ONLI'.
+      MESSAGE 'กรุณาใส่เลขข้อตกลงจัดซื้อ' TYPE 'E'.
+    ENDIF.
+  "<<<CHG-19: Start Insert
+  ELSE.
+    IF s_ebeln3[] IS INITIAL AND sy-ucomm = 'ONLI'.
+      MESSAGE 'กรุณาใส่เลขใบสั่งงาน' TYPE 'E'.
+    ENDIF.
+  "<<<CHG-19: End Insert
+  ENDIF.
+*>>> EOI CHG-15
+
+*<< หาก PR มี Material Group = 002XXXXX ให้ Default : "ขอจ้าง"
+*อื่นๆ Default : "ขอซื้อ"
+*  IF sy-ucomm = 'ONLI' OR
+*      sy-ucomm = 'CHK_OPEN'.
+*    EXIT.
+*  ENDIF.
+*  r1 = v_r1.
+*  r2 = v_r2.
+
+*--------------------------------------------------------------------*
+* S T A R T - O F - S E L E C T I O N
+*--------------------------------------------------------------------*
+START-OF-SELECTION.
+
+*<<< BOI CHG-15
+
+  PERFORM pf_chk_autho.
+
+  CHECK gv_auth IS INITIAL.
+
+  IF rd1 IS NOT INITIAL.
+    IF s_ebeln[] IS INITIAL.
+      MESSAGE 'กรุณาใส่เลขเอกสารจัดซื้อ' TYPE 'E'.
+    ENDIF.
+    CLEAR gv_template.              "<<<CHG-19: Insert
+  ELSEIF rd2 IS NOT INITIAL.        "<<<CHG-19: Insert "IF rd2 IS NOT INITIAL"
+    IF s_ebeln2[] IS INITIAL.
+      MESSAGE 'กรุณาใส่เลขข้อตกลงจัดซื้อ' TYPE 'E'.
+    ENDIF.
+  "<<<CHG-19: Start Insert
+    gv_template = 'ข้อตกลงจัดซื้อ'.
+  ELSE.
+    IF s_ebeln3[] IS INITIAL.
+      MESSAGE 'กรุณาใส่เลขใบสั่งงาน' TYPE 'E'.
+    ENDIF.
+    gv_template = 'ใบสั่งงาน'.
+  "<<<CHG-19: End Insert
+  ENDIF.
+*>>> EOI CHG-15
+  IF rd1 = 'X'.
+    PERFORM pf_set_header.
+*    PERFORM pf_get_header.     " INC0007082-del
+    PERFORM pf_get_header_v2.   " INC0007082-ins
+    PERFORM pf_get_detail.
+    IF NOT gt_detail[] IS INITIAL.
+      PERFORM pf_calculate_header.
+      PERFORM pf_text_head.
+      PERFORM pf_text_item.
+      PERFORM pf_get_accass.
+      PERFORM pf_chk_diff_fund_pr.
+      PERFORM pf_set_type_report.
+      PERFORM pf_set_pr_header.
+      PERFORM pf_get_pr_item.
+      PERFORM pf_merge_data.
+      PERFORM pf_print_doc.
+      IF gt_header-bsart = '3001' AND p_fiori IS INITIAL. "INS CHG-15
+        PERFORM attach_form.                              "INS CHG-15
+      ENDIF.                                              "INS CHG-15
+    ELSE.
+      MESSAGE s899(sd) WITH TEXT-e01.
+    ENDIF.
+  ELSE.
+
+    DATA class_name TYPE c LENGTH 30 VALUE 'CL_ABAP_BROWSER'.
+    DATA bdcdata_tab TYPE TABLE OF bdcdata.
+    DATA opt TYPE ctu_params.
+    "<<<CHG-19: Start Insert
+    DATA lv_ebeln TYPE ekko-ebeln.
+    IF rd2 = 'X'.
+      lv_ebeln = s_ebeln2-low.
+    ELSE.
+      lv_ebeln = s_ebeln3-low.
+    ENDIF.
+    "<<<CHG-19: End Insert
+    bdcdata_tab = VALUE #(
+      ( program  = 'ZLPUFM102' dynpro   = '0100' dynbegin = 'X' )
+      ( fnam = 'BDC_OKCODE'   fval = '/EEXEC' )
+      ( fnam = 'BDC_CURSOR'   fval = gv_ebeln )
+*      ( fnam = 'GV_EBELN'     fval = s_ebeln2-low )  "<<<CHG-19: Delete
+      ( fnam = 'GV_EBELN'     fval = lv_ebeln )       "<<<CHG-19: Insert
+      ).
+    opt-dismode = 'E'.
+    opt-defsize = 'X'.
+    SET PARAMETER ID 'TEMPLATE' FIELD gv_template.
+    CALL TRANSACTION 'ZLPUFM102' USING bdcdata_tab MODE 'E'.
+
+  ENDIF.
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_GET_HEADER
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+*FORM pf_get_header .
+*  DATA: lt_line TYPE TABLE OF tline WITH HEADER LINE.
+*  DATA: lv_name1 TYPE adrc-name1,
+*        lv_name2 TYPE adrc-name2,
+*        lv_name3 TYPE adrc-name3,
+*        lv_name4 TYPE adrc-name4,
+*        lv_ktokk TYPE lfa1-ktokk,
+*        lv_obj   TYPE thead-tdname.
+*  DATA: lt_t024 TYPE TABLE OF t024 WITH HEADER LINE.
+*  DATA: BEGIN OF lt_vendor OCCURS 0,
+*          lifnr LIKE lfa1-lifnr,
+*          name1 LIKE lfa1-name1,
+*          name2 LIKE lfa1-name2,
+*          name3 LIKE lfa1-name3,
+*          name4 LIKE lfa1-name4,
+*          ekorg LIKE lfm1-ekorg,
+*          zterm LIKE lfm1-zterm,
+*          verkf LIKE lfm1-verkf,
+*          telf1 LIKE lfm1-telf1,
+*          stcd3 LIKE lfa1-stcd3,
+*          bankn LIKE lfbk-bankn,
+*          koinh LIKE lfbk-koinh,
+*          bankl LIKE lfbk-bankl,
+*
+**        text1  LIKE t052u-text1,                               "CHG-06
+*        END OF lt_vendor.
+*
+*  DATA: lv_vname_1time    TYPE char200,                         "CHG-06
+*        ls_ztmmdepartment TYPE ztmmdepartment,                  "CHG-06
+*        lv_werks          TYPE werks_d,
+*        lv_konnr          TYPE konnr,
+*        lv_pr             TYPE banfn,
+*        lv_pr_bsart       TYPE bsart.
+*
+*  DATA: lr_ebeln TYPE RANGE OF ekko-ebeln,
+*        ls_ebeln LIKE LINE OF lr_ebeln.
+*
+**--->Get header data
+*  IF  nast-objky NE space.
+**    SELECT  a~ebeln
+**           bsart
+**           ekorg
+**           ekgrp
+**           b~fistl                              "INS CHG-15
+**           b~geber                              "INS CHG-15
+**           lifnr
+**           a~aedat
+**           ihrez
+**           a~adrnr
+**           verkf
+**           telf1
+**           frgke
+**           knumv
+**           unsez
+**           frgzu
+**           zmmapp_vorna
+**           zmmapp_nach2
+**           zmmapp_stext
+**           zmmacto_vorna
+**           zmmacto_nach2
+**           zmmacto_stext
+**           zzmm_no_esign                       "INS CHG-15
+**           zzmm_j_1tpbupl                      "INS CHG-15
+**           werks                               "INS CHG-15
+**
+**           c~knttp AS knttp                    "INS-INC0007082
+**           c~fistl AS fistl_ekpo               "INS-INC0007082
+**           c~geber AS geber_ekpo               "INS-INC0007082
+**
+**   INTO TABLE gt_header
+**     FROM ekko AS a LEFT JOIN ekkn AS b ON a~ebeln = b~ebeln         "INS CHG-15
+**                                        AND b~loekz = ''              "INS CHG-15
+**                    LEFT JOIN ekpo AS c ON a~ebeln = c~ebeln         "INS CHG-15
+**                                        AND c~loekz = ''              "INS CHG-15
+**    WHERE a~ebeln = nast-objky.
+*
+*    FREE lr_ebeln.
+*    CLEAR ls_ebeln.
+*    ls_ebeln = 'IEQ'.
+*    ls_ebeln-low = nast-objky.
+*    APPEND ls_ebeln TO lr_ebeln.
+*
+*    PERFORM pf_get_header_add TABLES lr_ebeln[].
+*
+*  ELSE.
+**    SELECT  a~ebeln
+**          bsart
+**          ekorg
+**          ekgrp
+**          b~fistl                            "INS CHG-15
+**          b~geber                            "INS CHG-15
+**          lifnr
+**          a~aedat
+**          ihrez
+**          a~adrnr
+**          verkf
+**          telf1
+**          frgke
+**          knumv
+**          unsez
+**          frgzu
+**          zmmapp_vorna
+**          zmmapp_nach2
+**          zmmapp_stext
+**          zmmacto_vorna
+**          zmmacto_nach2
+**          zmmacto_stext
+**          zzmm_no_esign                       "INS CHG-15
+**          zzmm_j_1tpbupl                      "INS CHG-15
+**          werks                               "INS CHG-15
+**
+**          c~knttp AS knttp                    "INS-INC0007082
+**          c~fistl AS fistl_ekpo               "INS-INC0007082
+**          c~geber AS geber_ekpo               "INS-INC0007082
+**
+**  INTO TABLE gt_header
+**     FROM ekko AS a LEFT JOIN ekkn AS b ON a~ebeln = b~ebeln         "INS CHG-15
+**                                        AND b~loekz = ''              "INS CHG-15
+**                    LEFT JOIN ekpo AS c ON a~ebeln = c~ebeln         "INS CHG-15
+**                                        AND c~loekz = ''              "INS CHG-15
+**    WHERE a~ebeln IN s_ebeln.
+*
+*    PERFORM pf_get_header_add TABLES s_ebeln[].
+*
+*  ENDIF.
+*
+*  DELETE ADJACENT DUPLICATES FROM gt_header COMPARING ebeln.
+*
+*  CHECK NOT gt_header[] IS INITIAL.
+*
+**--->Get Addr, Tel, Fax and Vendor name
+*  SELECT *
+*     INTO TABLE lt_t024
+*    FROM t024
+*    FOR ALL ENTRIES IN gt_header
+*  WHERE ekgrp = gt_header-ekgrp.
+*
+*  SELECT lfa1~lifnr
+*         lfa1~name1
+*         lfa1~name2
+*         lfa1~name3
+*         lfa1~name4
+*         lfm1~ekorg
+*         lfm1~zterm
+*         lfm1~verkf
+*         lfm1~telf1
+*         lfa1~stcd3
+*         lfbk~bankn
+*         lfbk~koinh
+*         lfbk~bankl
+**         t052u~text1                                           "CHG-06
+*    INTO TABLE lt_vendor
+*    FROM lfa1
+*    INNER JOIN lfm1
+*       ON lfa1~lifnr = lfm1~lifnr
+**    INNER JOIN lfbk                                            "DEL CHG-15
+*    LEFT JOIN lfbk                                              "INS CHG-15
+*       ON lfa1~lifnr = lfbk~lifnr
+*    FOR ALL ENTRIES IN gt_header
+*    WHERE lfa1~lifnr = gt_header-lifnr
+*  AND lfm1~ekorg = gt_header-ekorg.
+*
+*
+*  LOOP AT gt_header.
+*
+*    READ TABLE lt_t024 WITH KEY ekgrp = gt_header-ekgrp.
+*
+*    IF p_poscb = ' '.
+*      gt_header-addr = lt_t024-smtp_addr.
+*    ENDIF.
+**    gt_header-tel = lt_t024-tel_number.
+*    IF lt_t024-tel_extens NE space.
+*      CONCATENATE lt_t024-tel_number '#' lt_t024-tel_extens
+*             INTO gt_header-tel.
+*    ELSE.
+*      gt_header-tel = lt_t024-tel_number.
+*    ENDIF.
+*
+*
+*    gt_header-fax = lt_t024-telfx.
+***==Adress
+**    SELECT SINGLE * FROM adrc
+**     WHERE addrnumber = gt_header-adrnr.
+**    IF sy-subrc = 0.
+**      CONCATENATE adrc-street adrc-str_suppl3
+**      INTO gt_header-adress SEPARATED BY space.
+**      CONCATENATE  adrc-city1 adrc-post_code1
+**      INTO gt_header-adress2 SEPARATED BY space.
+*** Start of insert: CHG-06
+**      CONCATENATE adrc-name1 adrc-name2 adrc-name3 adrc-name4
+**      INTO lv_vname_1time.
+** End of insert: CHG-06
+**    ELSE.
+*
+*    SELECT SINGLE * FROM lfa1
+*    WHERE lifnr = gt_header-lifnr.
+*    IF sy-subrc = 0.
+**          SELECT SINGLE * FROM ADRC
+**           WHERE ADDRNUMBER = lfa1-adrnr.
+**          IF sy-subrc = 0.
+**            CONCATENATE ADRC-STREET ADRC-STR_SUPPL3
+**            INTO GT_HEADER-ADRESS SEPARATED BY space.
+**            CONCATENATE  ADRC-CITY1 ADRC-POST_CODE1
+**            INTO GT_HEADER-ADRESS2 SEPARATED BY space.
+**          ENDIF.
+**       ENDIF.
+**    ENDIF.
+**== Address  *>>CU_UPG_1809
+*      SELECT * UP TO 1 ROWS
+*       FROM adrc
+*       WHERE addrnumber = lfa1-adrnr
+*       ORDER BY addrnumber .
+*
+*        CONCATENATE adrc-house_num1 adrc-street adrc-str_suppl3
+*        INTO gt_header-adress SEPARATED BY space.
+*        CONCATENATE adrc-city2 adrc-city1 adrc-post_code1
+*        INTO gt_header-adress2 SEPARATED BY space.
+*        CONCATENATE adrc-name1 adrc-name2 adrc-name3 adrc-name4
+*        INTO lv_vname_1time.
+*        CONCATENATE adrc-name1 adrc-name2 adrc-name3 adrc-name4
+*        INTO gt_header-vname2.
+*
+*        gt_header-tel_addr = adrc-tel_number.
+*        gt_header-fax_addr = adrc-fax_number.
+*
+*        SELECT SINGLE smtp_addr INTO gt_header-smtp_addr
+*                                FROM adr6
+*        WHERE addrnumber EQ lfa1-adrnr .
+*
+*      ENDSELECT.
+*    ENDIF.
+*
+**<<< BOI CHG-15
+*    IF gt_header-zzmm_j_1tpbupl IS NOT INITIAL.
+*      SELECT SINGLE ebeln, c~name1, c~name2, c~name3, c~name4, b~addrnumber, house_num1, location, street, str_suppl3, city2, city1, post_code1
+*        FROM ekko AS a INNER JOIN fitha_pbupl_k AS b ON a~lifnr = b~lifnr
+*                                                    AND a~zzmm_j_1tpbupl = b~j_1tpbupl
+*                       INNER JOIN adrc AS c          ON b~addrnumber = c~addrnumber
+*        INTO @DATA(lw_address_j_1tpbupl)
+*        WHERE a~ebeln = @gt_header-ebeln
+*          AND a~zzmm_j_1tpbupl = @gt_header-zzmm_j_1tpbupl.
+*      IF sy-subrc = 0.
+*        CLEAR: gt_header-adress, gt_header-adress2, gt_header-vname2.
+*        CONCATENATE lw_address_j_1tpbupl-house_num1 lw_address_j_1tpbupl-street lw_address_j_1tpbupl-str_suppl3
+*        INTO gt_header-adress SEPARATED BY space.
+*        CONCATENATE lw_address_j_1tpbupl-city2 lw_address_j_1tpbupl-city1 lw_address_j_1tpbupl-post_code1
+*        INTO gt_header-adress2 SEPARATED BY space.
+*        CONCATENATE lw_address_j_1tpbupl-name1 lw_address_j_1tpbupl-name2 lw_address_j_1tpbupl-name3 lw_address_j_1tpbupl-name4
+*        INTO gt_header-vname2 SEPARATED BY space.
+*      ENDIF.
+*    ELSE.
+*      IF gt_header-adrnr IS NOT INITIAL.
+*        SELECT SINGLE addrnumber, house_num1, location, street, str_suppl3, city2, city1, post_code1
+*          FROM adrc
+*          INTO @DATA(lw_address_adrc)
+*        WHERE addrnumber = @gt_header-adrnr.
+*        IF sy-subrc = 0.
+*          CLEAR: gt_header-adress, gt_header-adress2.
+*          CONCATENATE lw_address_adrc-house_num1 lw_address_adrc-street lw_address_adrc-str_suppl3
+*          INTO gt_header-adress SEPARATED BY space.
+*          CONCATENATE lw_address_adrc-city2 lw_address_adrc-city1 lw_address_adrc-post_code1
+*          INTO gt_header-adress2 SEPARATED BY space.
+*        ENDIF.
+*      ELSE.
+*        SELECT SINGLE b~addrnumber, house_num1, location, street, str_suppl3, city2, city1, post_code1
+*           FROM ekko AS a INNER JOIN fitha_pbupl_k AS b ON a~lifnr = b~lifnr
+*                       INNER JOIN adrc AS c          ON b~addrnumber = c~addrnumber
+*          INTO CORRESPONDING FIELDS OF @lw_address_j_1tpbupl
+*          WHERE a~ebeln = @gt_header-ebeln
+*            AND b~j_1tpbupl = '00000'.
+*        IF sy-subrc = 0.
+*          CLEAR: gt_header-adress, gt_header-adress2.
+*          CONCATENATE lw_address_j_1tpbupl-house_num1 lw_address_j_1tpbupl-street lw_address_j_1tpbupl-str_suppl3
+*          INTO gt_header-adress SEPARATED BY space.
+*          CONCATENATE lw_address_j_1tpbupl-city2 lw_address_j_1tpbupl-city1 lw_address_j_1tpbupl-post_code1
+*          INTO gt_header-adress2 SEPARATED BY space.
+*        ENDIF.
+*      ENDIF.
+*    ENDIF.
+**>>> EOI CHG-15
+*
+**==Delivery Adress
+**----สถานที่ส่งของ ให้ดึงที่ F63 ก่อน หากไม่มี ให้ดึงที่    ztmmpurchgroup-zdelivery_addres
+*    MOVE gt_header-ebeln TO lv_obj.
+*    PERFORM pf_read_text TABLES lt_line
+**                         USING lv_obj 'F63' 'EKKO' 'X'.        "CHG-06
+*                         USING lv_obj 'F63' 'EKKO' ''.          "CHG-06
+** Start of comment: CHG-06
+**    IF NOT lt_line[] IS INITIAL.
+**      READ TABLE lt_line INDEX 1.
+**      gt_header-delivery = lt_line-tdline.
+**      gt_header-foottxt  = lt_line-tdline.
+**    ENDIF.
+** End of comment: CHG-06
+*
+** Start of insert: CHG-06
+*
+*    LOOP AT lt_line WHERE tdline IS NOT INITIAL.
+*      IF gt_header-delivery IS INITIAL.
+*        gt_header-delivery = lt_line-tdline.
+*      ELSE.
+*        CONCATENATE gt_header-delivery lt_line-tdline
+*        INTO gt_header-delivery.
+*      ENDIF.
+*
+*      IF gt_header-foottxt IS INITIAL.
+*        gt_header-foottxt = lt_line-tdline.
+*      ELSE.
+*        CONCATENATE gt_header-foottxt lt_line-tdline
+*        INTO gt_header-foottxt.
+*      ENDIF.
+*    ENDLOOP.
+** End of insert: CHG-06
+*    SELECT SINGLE * FROM ztmmpurchgroup
+*    WHERE zpur_grp = gt_header-ekgrp.
+*    IF sy-subrc = 0.
+**      IF gt_header-delivery IS INITIAL.
+**      gt_header-delivery = ztmmpurchgroup-zdelivery_addres.
+*      gt_header-foottxt  = ztmmpurchgroup-zdelivery_addres.
+*      IF p_poscb = ' '.
+*        CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+*               INTO gt_header-delivery_name SEPARATED BY space.
+*      ENDIF.
+*      IF sy-ucomm IS INITIAL.
+** Start of comment: CHG-06
+**        IF p_name IS INITIAL.
+**          CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+**          INTO gt_header-namsur SEPARATED BY space.
+**
+**        ENDIF.
+** End of comment: CHG-06
+*
+**        IF p_pos IS INITIAL. "CHG-08 : Comment
+**          gt_header-pur_position1 = ztmmpurchgroup-zpur_position1. "CHG-08 : Comment
+**        ELSE.      "CHG-08 : Comment
+*        gt_header-pur_position1 = p_pos.
+**        ENDIF. "CHG-08 : Comment
+*
+*      ELSE.
+** Start of comment: CHG-06
+**        CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+**        INTO gt_header-namsur SEPARATED BY space.
+** End of comment: CHG-06
+*        gt_header-pur_position1 = ztmmpurchgroup-zpur_position1.
+*        IF p_pos IS INITIAL.
+*          gt_header-pur_position1 = ztmmpurchgroup-zpur_position1.
+**        ELSE.
+**           gt_header-PUR_POSITION1 = p_pos.
+*        ENDIF.
+*      ENDIF.
+*    ELSE.
+*      IF sy-ucomm IS INITIAL.
+** Start of comment: CHG-06
+**        IF p_name IS INITIAL.
+**          CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+**          INTO gt_header-namsur SEPARATED BY space.
+**
+**        ENDIF.
+** End of comment: CHG-06
+*
+*        IF p_pos IS INITIAL.
+*          gt_header-pur_position1 = ztmmpurchgroup-zpur_position1.
+*        ELSE.
+*          gt_header-pur_position1 = p_pos.
+*        ENDIF.
+*      ENDIF.
+*    ENDIF.
+** ผู้ติดต่อ
+*    gt_header-namsur = p_name.                                  "CHG-06
+*
+**<<< BOI CHG-15
+*    IF gt_header-ekgrp(2) CP '01'.
+*      gt_header-werks = '0100'.
+*    ENDIF.
+**>>> EOI CHG-15
+*
+**==Tax
+*    SELECT * UP TO 1 ROWS
+*      FROM j_1bbranch
+**     WHERE branch = gt_header-ekgrp+0(2)                   "DEL CHG-15
+*     WHERE branch = gt_header-werks                         "INS CHG-15
+*      ORDER BY branch .
+**    IF sy-subrc = 0.
+*      "<<< CHG-06 : Start insert
+*      IF j_1bbranch-stcd1 IS INITIAL.
+*        gt_header-tax = j_1bbranch-stcd2.
+*      ELSE.
+*        gt_header-tax = j_1bbranch-stcd1.
+*      ENDIF.
+*      ">>> CHG-06 : End insert
+**      gt_header-tax = j_1bbranch-stcd2. " CHG-06 - comment
+**    ENDIF.
+*    ENDSELECT.
+**------------------------------------
+*
+*    READ TABLE lt_vendor WITH KEY lifnr = gt_header-lifnr.
+*    IF gt_header-vname2 IS INITIAL.
+*      CONCATENATE lt_vendor-name1 lt_vendor-name2
+*                  lt_vendor-name3 lt_vendor-name4
+*             INTO gt_header-vname2.
+*    ENDIF.
+*    gt_header-stcd3 =  lt_vendor-stcd3 .
+*    gt_header-bankn =  lt_vendor-bankn .
+*    gt_header-koinh =  lt_vendor-koinh .
+*
+*    SELECT SINGLE banka INTO gt_header-banka
+*                        FROM bnka
+*                       WHERE banks EQ 'TH'
+*    AND bankl EQ lt_vendor-bankl .
+*
+**<<< BOI CHG-15
+*    LOOP AT lt_vendor TRANSPORTING NO FIELDS WHERE lifnr = gt_header-lifnr
+*                                               AND bankn <> gt_header-bankn.
+*      CLEAR: gt_header-bankn, gt_header-koinh.
+*
+*      SELECT lfa1~lifnr,
+*             lfbk~bankn,
+*             lfbk~koinh,
+*             lfbk~bkref
+*    INTO TABLE @DATA(lt_vendor_temp)
+*    FROM lfa1 INNER JOIN lfm1 ON lfa1~lifnr = lfm1~lifnr
+*              LEFT JOIN  lfbk ON lfa1~lifnr = lfbk~lifnr
+*    WHERE lfa1~lifnr = @gt_header-lifnr.
+*      LOOP AT lt_vendor_temp INTO DATA(ls_vendor_temp) WHERE bkref(5) = gt_header-zzmm_j_1tpbupl.
+*        gt_header-bankn = ls_vendor_temp-bankn.
+*        gt_header-koinh = ls_vendor_temp-koinh.
+*        EXIT.
+*      ENDLOOP.
+*    ENDLOOP.
+**>>> EOI CHG-15
+*
+**    IF gt_header-frgke EQ 'F'.
+**      SELECT SINGLE MAX( crdate )
+**                                 FROM ztwf_po_log
+**                                 INTO gt_header-po_log_date
+**      WHERE ebeln EQ  gt_header-ebeln.
+**    ENDIF.
+*
+*
+**    IF lt_vendor[] IS NOT INITIAL.
+**----------------------------------------
+**    IF gt_header-adrnr = space.
+**
+**      CONCATENATE lt_vendor-name1 lt_vendor-name2
+***                  lt_vendor-name3 lt_vendor-name4
+**                  INTO gt_header-vname.
+**
+**
+**    ELSE.
+*****Get data case one time
+***      SELECT SINGLE name1 name2 name3 name4
+***               INTO (lv_name1,lv_name2,lv_name3,lv_name4)
+***             FROM adrc
+***             WHERE addrnumber = gt_header-adrnr.
+***      CONCATENATE lv_name1 lv_name2
+***                  lv_name3 lv_name4
+***                  INTO gt_header-vname.
+**      SELECT SINGLE name1 name2
+**               INTO (lv_name1,lv_name2)
+**             FROM adrc
+**             WHERE addrnumber = gt_header-adrnr.
+**      CONCATENATE lv_name1 lv_name2
+**                  INTO gt_header-vname.
+**    ENDIF.
+*
+** Start of comment: CHG-06
+**    DATA: v_adrnr TYPE adrc-addrnumber.
+**    SELECT SINGLE adrnr INTO v_adrnr
+**      FROM j_1bbranch
+**     WHERE branch = gt_header-ekgrp+0(2).
+**    IF v_adrnr NE space.
+**      SELECT SINGLE name1 name2
+**               INTO (lv_name1,lv_name2)
+**             FROM adrc
+**             WHERE addrnumber = v_adrnr.
+**      CONCATENATE lv_name1 lv_name2
+**                  INTO gt_header-vname SEPARATED BY space.
+**      SELECT SINGLE * FROM adrc
+**       WHERE addrnumber = v_adrnr.
+**      IF sy-subrc = 0.
+**        CONCATENATE adrc-street adrc-str_suppl3
+**        INTO gt_header-adress SEPARATED BY space.
+**        CONCATENATE  adrc-city1 adrc-post_code1
+**        INTO gt_header-adress2 SEPARATED BY space.
+**      ENDIF.
+**    ENDIF.
+** End of comment: CHG-06
+** Start of insert: CHG-06
+** Get Name & Address of Contract
+*    SELECT SINGLE werks konnr
+*                        FROM ekpo
+*                        INTO  ( lv_werks, lv_konnr )
+*                        WHERE ebeln EQ gt_header-ebeln
+*    AND loekz EQ ' ' .
+*
+**<<< BOI CHG-15
+*    IF gt_header-ekgrp(2) CP '01'.
+*      lv_werks = '0100'.
+*    ENDIF.
+**>>> EOI CHG-15
+*
+*    CLEAR ls_ztmmdepartment.
+*    SELECT SINGLE * INTO ls_ztmmdepartment
+*      FROM ztmmdepartment
+*    WHERE zno = lv_werks.
+*    IF sy-subrc = 0.
+*      MOVE: ls_ztmmdepartment-zdesc  TO gt_header-vname,
+*            ls_ztmmdepartment-zaddress1 TO gt_header-vadress,
+*            ls_ztmmdepartment-zaddress2 TO gt_header-vadress2.
+*    ENDIF.
+**>  Begin ins by CHG-15
+*    IF g_page = '2' AND gt_header-ekgrp CP '01*'.
+*      gt_header-vname = 'สำนักงานมหาวิทยาลัย จุฬาลงกรณ์มหาวิทยาลัย'.
+*    ENDIF.
+**<  End ins by CHG-15
+** End of insert: CHG-06
+**-------------------------------------------
+*
+*    SELECT SINGLE ktokk
+*           INTO   lv_ktokk
+*           FROM  lfa1
+*    WHERE  lifnr = gt_header-lifnr.
+*    IF lv_ktokk = 'Z002'. " <<<<<Change V2  "ถึง" 13/11/2007
+**      MOVE 'เรียน'  TO gt_header-to .
+*    ELSE.
+*      MOVE 'ผู้จัดการ'  TO gt_header-to .
+** Start of insert: CHG-06
+*      IF lv_ktokk = 'ZONE'. "One-time Vendor
+*        gt_header-vname2 = lv_vname_1time.
+*      ENDIF.
+** End of insert: CHG-06
+*    ENDIF.
+**    gt_header-term = lt_vendor-text1.                          "CHG-06
+**    IF gt_header-bsart = '3001'.
+*    IF gt_header-bsart = '3001' AND gt_header-zzmm_no_esign IS INITIAL.
+*      IF gt_header-frgke = 'F'.
+**        SELECT cruser, crdate, crtime, frgco UP TO 1 ROWS        "DEL CHG-15
+*        SELECT * UP TO 1 ROWS                                     "INS CHG-15
+*        FROM ztwf_po_log
+*        INTO @DATA(lw_ztwf_po_log)
+*        WHERE ebeln  = @gt_header-ebeln
+*        AND frgco = '33'
+*        ORDER BY crdate DESCENDING , crtime DESCENDING.
+*        ENDSELECT.
+*
+*        IF sy-subrc = 0.
+*
+*          IF lw_ztwf_po_log-aprv_ttxt = '01'.
+*
+*            SELECT pernr, fistl, geber, xubname, ekgrp , pernr_owner
+*              FROM ztmm_rel_user
+*              INTO TABLE @DATA(lt_pernr_deli)
+*             WHERE name_owner = @lw_ztwf_po_log-us_name
+**               AND frgco = '33'
+*               "AND ekgrp = @eban-ekgrp
+*               AND begda <= @lw_ztwf_po_log-crdate
+*               AND endda >= @lw_ztwf_po_log-crdate.
+*            SELECT pernr, fistl, geber, xubname, ekgrp , pernr_owner
+*            FROM ztmm_rel_user
+*            INTO TABLE @DATA(lt_pernr)
+*            WHERE xubname = @lw_ztwf_po_log-cruser.
+*          ELSE.
+**<<< BOI CHG-15
+*            IF lw_ztwf_po_log-us_name IS NOT INITIAL.
+*              SELECT pernr, fistl, geber, xubname, ekgrp , pernr_owner
+*              FROM ztmm_rel_user
+*              INTO TABLE @lt_pernr
+*              WHERE xubname = @lw_ztwf_po_log-cruser.
+*
+*              SELECT pernr, fistl, geber, xubname, ekgrp , pernr_owner
+*              FROM ztmm_rel_user
+*              INTO TABLE @lt_pernr_deli
+*              WHERE xubname = @lw_ztwf_po_log-us_name.
+**              AND frgco = '33'.
+**              AND ( fistl = @gt_header-fistl
+**                 OR fistl = '*' )
+**              AND ( geber = @gt_header-geber
+**                 OR geber = '*' ).
+*            ELSE.
+*              SELECT pernr, fistl, geber, xubname, ekgrp , pernr_owner
+*              FROM ztmm_rel_user
+*              INTO TABLE @lt_pernr
+*              WHERE xubname = @lw_ztwf_po_log-cruser
+*                AND endda >= @lw_ztwf_po_log-crdate
+*                AND begda <= @lw_ztwf_po_log-crdate
+*                AND frgco = '33'.
+**              AND ( fistl = @gt_header-fistl
+**                 OR fistl = '*' )
+**              AND ( geber = @gt_header-geber
+**                 OR geber = '*' ).
+*            ENDIF.
+*
+*
+*          ENDIF.
+**          SELECT pernr, fistl, geber, xubname, ekgrp
+**            FROM ztmm_rel_user
+**            INTO TABLE @DATA(lt_pernr)
+**            WHERE xubname = @lw_ztwf_po_log-cruser
+**              AND frgco = '33'
+**            AND ( fistl = @gt_header-fistl
+**               OR fistl = '*' )
+**            AND ( geber = @gt_header-geber
+**               OR geber = '*' ).
+**>>> EOI CHG-15
+*          IF lw_ztwf_po_log-us_name IS INITIAL .
+*
+*            LOOP AT lt_pernr INTO DATA(lw_pernr_chk).
+*              IF gt_header-ekgrp CP lw_pernr_chk-ekgrp AND
+*                 gt_header-fistl CP lw_pernr_chk-fistl AND
+*                 gt_header-geber CP lw_pernr_chk-geber.
+*              ELSE.
+*                DELETE lt_pernr.
+*              ENDIF.
+*            ENDLOOP.
+*            LOOP AT lt_pernr_deli INTO lw_pernr_chk.
+*              IF gt_header-ekgrp CP lw_pernr_chk-ekgrp AND
+*                 gt_header-fistl CP lw_pernr_chk-fistl AND
+*                 gt_header-geber CP lw_pernr_chk-geber.
+*              ELSE.
+*                DELETE lt_pernr_deli.
+*              ENDIF.
+*            ENDLOOP.
+*
+*          ENDIF.
+*          SORT lt_pernr BY fistl DESCENDING geber DESCENDING.
+*          CLEAR: v_flag_name.
+** { INC0007082-mod
+**          LOOP AT lt_pernr INTO DATA(lw_pernr).
+**            IF lw_ztwf_po_log-us_name IS NOT INITIAL.
+**              lw_pernr-ekgrp = gt_header-ekgrp.
+**              lw_pernr-fistl = gt_header-fistl.
+**              lw_pernr-geber = gt_header-geber.
+**            ENDIF.
+*          LOOP AT lt_pernr INTO DATA(lw_pernr).
+*            IF gt_header-ekgrp CP lw_pernr-ekgrp AND
+*               gt_header-fistl CP lw_pernr-fistl AND
+*               gt_header-geber CP lw_pernr-geber.
+*              " pass
+*            ELSE.
+*              " skip this record
+*              CONTINUE.
+*            ENDIF.
+** } INC0007082-mod
+*            IF gt_header-ekgrp CP lw_pernr-ekgrp AND
+*               gt_header-fistl CP lw_pernr-fistl AND
+*               gt_header-geber CP lw_pernr-geber AND
+*               v_flag_name     IS INITIAL.
+*
+*              v_flag_name = 'X'.
+*              SELECT SINGLE a~pernr, a~vorna AS vorna_sig, a~nachn AS nachn_sig, a~vorsw AS vorsw_sig, a~anrlt AS anrlt_sig,
+*                            b~vorna AS vorna_pa, b~nachn AS nachn_pa, b~vorsw AS vorsw_pa, b~titl2 AS titl2_pa, b~knznm,
+*                            esign, stext, tline,
+*                            c~plans AS plans_9001,
+*                            d~plans AS plans_0001,
+*                            e~anrlt AS anrlt_t522t
+*              INTO @DATA(lw_sig_name)
+*              FROM ztbc_signature AS a LEFT JOIN pa0002 AS b ON a~pernr = b~pernr
+*                                                            AND b~begda <= @lw_ztwf_po_log-crdate
+*                                                            AND b~endda >= @lw_ztwf_po_log-crdate
+*                                       LEFT JOIN pa9001 AS c ON a~pernr = c~pernr
+*                                                            AND c~begda <= @lw_ztwf_po_log-crdate
+*                                                            AND c~endda >= @lw_ztwf_po_log-crdate
+*                                                            AND c~subty = '0001'
+*                                       LEFT JOIN pa0001 AS d ON a~pernr = d~pernr
+*                                                            AND d~begda <= @lw_ztwf_po_log-crdate
+*                                                            AND d~endda >= @lw_ztwf_po_log-crdate
+*                                       LEFT JOIN t522t  AS e ON b~anred = e~anred
+*              WHERE a~pernr = @lw_pernr-pernr
+*                AND a~begda <= @lw_ztwf_po_log-crdate
+*                AND a~endda >= @lw_ztwf_po_log-crdate.
+*
+*              IF sy-subrc = 0.
+*                gv_sign_10 = lw_sig_name-esign.
+*
+*                IF lw_sig_name-plans_9001 IS NOT INITIAL.
+*                  SELECT SINGLE tline
+*                    INTO @DATA(lv_hrt1002_tline)
+*                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+*                    WHERE ( objid = @lw_sig_name-pernr
+*                  OR objid = @lw_sig_name-plans_9001 )
+*                      AND subty  = '9001'
+*                      AND endda >= @lw_ztwf_po_log-crdate
+*                      AND begda <= @lw_ztwf_po_log-crdate.
+*                ELSEIF lw_sig_name-plans_0001 IS NOT INITIAL.
+*                  SELECT SINGLE tline
+*                    INTO @lv_hrt1002_tline
+*                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+*                    WHERE ( objid = @lw_sig_name-pernr
+*                  OR objid = @lw_sig_name-plans_0001 )
+*                      AND subty  = '9001'
+*                      AND endda >= @lw_ztwf_po_log-crdate
+*                      AND begda <= @lw_ztwf_po_log-crdate.
+*                ENDIF.
+*
+*                IF lv_hrt1002_tline IS NOT INITIAL.
+*                  gt_header-t13_txt2 = lv_hrt1002_tline.
+*                ELSE.
+*                  gt_header-t13_txt2 = lw_sig_name-tline.
+*                ENDIF.
+*
+*                IF lw_sig_name-knznm = '01'.
+*                  CLEAR: gv_fullname.
+*                  CALL FUNCTION 'ZHR_GET_TITLENAME'
+*                    EXPORTING
+*                      pernr     = lw_pernr-pernr
+*                    IMPORTING
+*                      full_name = gv_fullname.
+*                  MOVE gv_fullname TO gt_header-t13_txt1.
+*                ELSE.
+*                  IF lw_sig_name-vorsw_pa IS NOT INITIAL OR lw_sig_name-titl2_pa IS NOT INITIAL.
+*                    gt_header-t13_txt1 = lw_sig_name-vorsw_pa && lw_sig_name-titl2_pa.
+*                  ELSE.
+*                    gt_header-t13_txt3 = lw_sig_name-anrlt_t522t.
+*                  ENDIF.
+*                  IF gt_header-t13_txt1 IS INITIAL OR gt_header-t13_txt3 IS INITIAL.
+*                    IF lw_sig_name-vorsw_sig IS NOT INITIAL.
+*                      gt_header-t13_txt1 = lw_sig_name-vorsw_sig.
+*                    ELSE.
+*                      gt_header-t13_txt3 = lw_sig_name-anrlt_sig.
+*                    ENDIF.
+*                  ENDIF.
+*                ENDIF.
+*
+*                IF lw_sig_name-vorna_sig IS NOT INITIAL AND lw_sig_name-nachn_sig IS NOT INITIAL.
+*                  gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_sig.
+*                  gt_header-t13_txt4 = lw_sig_name-nachn_sig.
+*                ELSE.
+*                  gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_pa.
+*                  gt_header-t13_txt4 = lw_sig_name-nachn_pa.
+*                ENDIF.
+*              ENDIF.
+*            ENDIF.
+*          ENDLOOP.
+*
+**<<< BOI CHG-15
+*          SORT lt_pernr_deli BY fistl DESCENDING geber DESCENDING.
+*          CLEAR: v_flag_name_deli.
+*          LOOP AT lt_pernr_deli INTO DATA(lw_pernr_deli).
+*
+*            IF lw_ztwf_po_log-aprv_ttxt = '01'.
+*
+*              lw_pernr_deli-pernr = lw_pernr_deli-pernr_owner.
+*
+*            ENDIF.
+*
+*
+*            IF gt_header-ekgrp CP lw_pernr_deli-ekgrp AND gt_header-fistl CP lw_pernr_deli-fistl AND gt_header-geber CP lw_pernr_deli-geber AND v_flag_name_deli IS INITIAL.
+*              v_flag_name_deli = 'X'.
+*              SELECT SINGLE a~pernr, a~vorna AS vorna_sig, a~nachn AS nachn_sig, a~vorsw AS vorsw_sig, a~anrlt AS anrlt_sig,
+*                            b~vorna AS vorna_pa, b~nachn AS nachn_pa, b~vorsw AS vorsw_pa, b~titl2 AS titl2_pa,
+*                            esign, stext, tline, c~subty,
+*                            c~plans AS plans_9001,
+*                            d~plans AS plans_0001,
+*                            e~anrlt AS anrlt_t522t
+*              INTO @DATA(lw_sig_name_deli)
+*              FROM ztbc_signature AS a LEFT JOIN pa0002 AS b ON a~pernr = b~pernr
+*                                                            AND b~begda <= @lw_ztwf_po_log-crdate
+*                                                            AND b~endda >= @lw_ztwf_po_log-crdate
+*                                       LEFT JOIN pa9001 AS c ON a~pernr = c~pernr
+*                                                            AND c~begda <= @lw_ztwf_po_log-crdate
+*                                                            AND c~endda >= @lw_ztwf_po_log-crdate
+*                                                            AND c~subty = '0001'
+*                                       LEFT JOIN pa0001 AS d ON a~pernr = d~pernr
+*                                                            AND d~begda <= @lw_ztwf_po_log-crdate
+*                                                            AND d~endda >= @lw_ztwf_po_log-crdate
+*                                       LEFT JOIN t522t  AS e ON b~anred = e~anred
+*              WHERE a~pernr = @lw_pernr_deli-pernr
+*                AND a~begda <= @lw_ztwf_po_log-crdate
+*                AND a~endda >= @lw_ztwf_po_log-crdate.
+*
+*              IF sy-subrc = 0.
+**                SORT lt_sig_name_deli BY subty.
+**                READ TABLE lt_sig_name_deli INTO DATA(lw_sig_name_deli) INDEX 1.
+**                REFRESH: lt_sig_name_deli.
+*                IF lw_sig_name_deli-plans_9001 IS NOT INITIAL.
+*                  SELECT SINGLE tline
+*                    INTO @DATA(lv_hrt1002_tline_deli)
+*                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+*                    WHERE ( objid = @lw_sig_name_deli-pernr
+*                         OR objid = @lw_sig_name_deli-plans_9001 )
+*                      AND subty  = '9001'
+*                      AND endda >= @lw_ztwf_po_log-crdate
+*                      AND begda <= @lw_ztwf_po_log-crdate.
+*                ELSEIF lw_sig_name_deli-plans_0001 IS NOT INITIAL.
+*                  SELECT SINGLE tline
+*                    INTO @lv_hrt1002_tline_deli
+*                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+*                    WHERE ( objid = @lw_sig_name_deli-pernr
+*                         OR objid = @lw_sig_name_deli-plans_0001 )
+*                      AND subty  = '9001'
+*                      AND endda >= @lw_ztwf_po_log-crdate
+*                      AND begda <= @lw_ztwf_po_log-crdate.
+*                ENDIF.
+*
+*                IF lv_hrt1002_tline_deli IS NOT INITIAL.
+*                  DATA(lv_posi_deli) = lv_hrt1002_tline_deli.
+*                ELSE.
+*                  lv_posi_deli = lw_sig_name_deli-tline.
+*                ENDIF.
+*              ENDIF.
+*            ENDIF.
+*          ENDLOOP.
+*
+*          IF lw_ztwf_po_log-aprv_ttxt IS NOT INITIAL AND gt_header-t13_txt2 IS NOT INITIAL.
+*            CASE lw_ztwf_po_log-aprv_ttxt.
+*              WHEN '01'.
+*                CONCATENATE gt_header-t13_txt2 'ปฏิบัติการแทน' lv_posi_deli INTO gt_header-t13_txt2 SEPARATED BY space.
+*              WHEN '02'.
+*                CONCATENATE gt_header-t13_txt2 'รักษาการแทน' lv_posi_deli INTO gt_header-t13_txt2 SEPARATED BY space.
+*            ENDCASE.
+*          ENDIF.
+**>>> EOI CHG-15
+*
+*        ENDIF.
+*
+**<<< BOI CHG-15
+*        IF gt_header-frgke EQ 'F'.
+*          SELECT SINGLE MAX( crdate )
+*                                     FROM ztwf_po_log
+*                                     INTO gt_header-po_log_date
+*          WHERE ebeln EQ  gt_header-ebeln.
+*        ENDIF.
+**>>> EOI CHG-15
+*
+*      ELSE.
+*        IF gt_header-zmmacto_vorna IS NOT INITIAL.
+*          gt_header-t13_txt1 = gt_header-zmmacto_vorna.
+*          gt_header-t13_txt3 = gt_header-zmmacto_nach2.
+*          gt_header-t13_txt2 = gt_header-zmmacto_stext.
+*        ELSE.
+*          gt_header-t13_txt1 = gt_header-zmmapp_vorna.
+*          gt_header-t13_txt3 = gt_header-zmmapp_nach2.
+*          gt_header-t13_txt2 = gt_header-zmmapp_stext.
+*        ENDIF.
+*      ENDIF.
+**      IF gt_header-bsart = '3001' AND gt_header-zzmm_no_esign = 'X'.
+**        CLEAR: gv_sign_10.
+**      ENDIF.
+*    ELSEIF gt_header-bsart CP '5*'.
+*
+**      SELECT SINGLE banfn INTO lv_pr
+**                          from eban
+**                         where
+**
+**      SELECT SINGLE konnr INTO lv_konnr
+**                          from ekpo
+**                         where ebeln eq gt_header-ebeln
+**                           and loekz =  ' '.
+**
+**      SELECT SINGLE banfn INTO lv_pr
+**                          from ekpo
+**                         where ebeln eq lv_konnr
+**                           and loekz =  ' '.
+**
+**      SELECT SINGLE bsart INTO lv_pr_bsart
+**                          FROM eban
+**                         WHERE banfn EQ lv_pr.
+**      IF gt_header-frgzu = 'X' AND lv_pr_bsart = '1A31'.
+**
+**        SELECT cruser, crdate, crtime, frgco UP TO 1 ROWS
+**        FROM ztwf_po_log
+**        INTO @lw_ztwf_po_log
+**        WHERE ebeln  = @gt_header-ebeln
+**        AND frgco = 'D2'
+**        ORDER BY crdate, crtime DESCENDING.
+**        ENDSELECT.
+**
+**        IF sy-subrc = 0.
+**          SELECT pernr, xubname, ekgrp
+**            FROM ztmm_rel_user
+**            INTO TABLE @lt_pernr
+**            WHERE xubname = @lw_ztwf_po_log-cruser
+**              AND frgco = 'D2'.
+**
+**          LOOP AT lt_pernr INTO lw_pernr.
+***          IF eban-ekgrp CP lw_pernr-ekgrp.
+**
+**            SELECT SINGLE a~pernr, a~vorna AS vorna_sig, a~nachn AS nachn_sig, a~vorsw AS vorsw_sig, a~anrlt AS anrlt_sig,
+**                          b~vorna AS vorna_pa, b~nachn AS nachn_pa, b~vorsw AS vorsw_pa, b~titl2 AS titl2_pa,
+**                          esign, stext, tline,
+**                          c~plans AS plans_9001,
+**                          d~plans AS plans_0001,
+**                          e~anrlt AS anrlt_t522t
+**            INTO @lw_sig_name
+**            FROM ztbc_signature AS a LEFT JOIN pa0002 AS b ON a~pernr = b~pernr
+**                                                          AND b~begda <= @lw_ztwf_po_log-crdate
+**                                                          AND b~endda >= @lw_ztwf_po_log-crdate
+**                                     LEFT JOIN pa9001 AS c ON a~pernr = c~pernr
+**                                                          AND c~begda <= @lw_ztwf_po_log-crdate
+**                                                          AND c~endda >= @lw_ztwf_po_log-crdate
+**                                                          AND c~subty = '0001'
+**                                     LEFT JOIN pa0001 AS d ON a~pernr = d~pernr
+**                                                          AND d~begda <= @lw_ztwf_po_log-crdate
+**                                                          AND d~endda >= @lw_ztwf_po_log-crdate
+**                                     LEFT JOIN t522t  AS e ON b~anred = e~anred
+**            WHERE a~pernr = @lw_pernr-pernr
+**              AND a~begda <= @lw_ztwf_po_log-crdate
+**              AND a~endda >= @lw_ztwf_po_log-crdate.
+**
+**            IF sy-subrc = 0.
+***              p_nam11 = lw_sig_name-pernr.
+**              gv_sign_10 = lw_sig_name-esign.
+**
+**              IF lw_sig_name-plans_9001 IS NOT INITIAL.
+**                SELECT SINGLE tline
+**                  INTO @lv_hrt1002_tline
+**                  FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+**                  WHERE ( objid = @lw_sig_name-pernr
+**                       OR objid = @lw_sig_name-plans_9001 ).
+**              ELSEIF lw_sig_name-plans_0001 IS NOT INITIAL.
+**                SELECT SINGLE tline
+**                  INTO @lv_hrt1002_tline
+**                  FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+**                  WHERE ( objid = @lw_sig_name-pernr
+**                       OR objid = @lw_sig_name-plans_0001 ).
+**              ENDIF.
+**
+**              IF lv_hrt1002_tline IS NOT INITIAL.
+**                gt_header-t13_txt2 = lv_hrt1002_tline.
+**              ELSE.
+**                gt_header-t13_txt2 = lw_sig_name-tline.
+**              ENDIF.
+**
+**              IF lw_sig_name-vorsw_pa IS NOT INITIAL OR lw_sig_name-titl2_pa IS NOT INITIAL.
+**                gt_header-t13_txt1 = lw_sig_name-vorsw_pa && lw_sig_name-titl2_pa.
+**              ELSE.
+**                gt_header-t13_txt3 = lw_sig_name-anrlt_t522t.
+**              ENDIF.
+**              IF gt_header-t13_txt1 IS INITIAL OR gt_header-t13_txt3 IS INITIAL.
+**                IF lw_sig_name-vorsw_sig IS NOT INITIAL.
+**                  gt_header-t13_txt1 = lw_sig_name-vorsw_sig.
+**                ELSE.
+**                  gt_header-t13_txt3 = lw_sig_name-anrlt_sig.
+**                ENDIF.
+**              ENDIF.
+**
+**              IF lw_sig_name-vorna_sig IS NOT INITIAL AND lw_sig_name-nachn_sig IS NOT INITIAL.
+**                gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_sig.
+**                gt_header-t13_txt4 = lw_sig_name-nachn_sig.
+**              ELSE.
+**                gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_pa.
+**                gt_header-t13_txt4 = lw_sig_name-nachn_pa.
+**              ENDIF.
+**            ENDIF.
+***          ENDIF.
+**          ENDLOOP.
+**          ENDIF.
+*
+**      ELSEIF gt_header-frgzu = 'X' AND lv_pr_bsart <> '1A31'.
+**      IF gt_header-frgzu = 'X'.
+*      IF gt_header-zmmacto_vorna IS NOT INITIAL.
+*        gt_header-t13_txt1 = gt_header-zmmacto_vorna.
+*        gt_header-t13_txt3 = gt_header-zmmacto_nach2.
+*        gt_header-t13_txt2 = gt_header-zmmacto_stext.
+*      ELSE.
+*        gt_header-t13_txt1 = gt_header-zmmapp_vorna.
+*        gt_header-t13_txt3 = gt_header-zmmapp_nach2.
+*        gt_header-t13_txt2 = gt_header-zmmapp_stext.
+*      ENDIF.
+**      ENDIF.
+*    ELSE.
+*
+**      IF gt_header-bsart EQ '3002' OR ( gt_header-bsart = '3001' AND gt_header-zzmm_no_esign = 'X' ).
+*      IF gt_header-zmmacto_vorna IS NOT INITIAL.
+*        gt_header-t13_txt1 = gt_header-zmmacto_vorna.
+*        gt_header-t13_txt3 = gt_header-zmmacto_nach2.
+*        gt_header-t13_txt2 = gt_header-zmmacto_stext.
+*      ELSE.
+*        gt_header-t13_txt1 = gt_header-zmmapp_vorna.
+*        gt_header-t13_txt3 = gt_header-zmmapp_nach2.
+*        gt_header-t13_txt2 = gt_header-zmmapp_stext.
+*      ENDIF.
+**      ELSE.
+**        gt_header-t13_txt1 = gt_header-zmmapp_vorna.
+**        gt_header-t13_txt3 = gt_header-zmmapp_nach2.
+**        gt_header-t13_txt2 = gt_header-zmmapp_stext.
+**      ENDIF.
+*
+*    ENDIF.
+*
+**<<< BOI CHG-15
+*    IF gt_header-po_log_date IS INITIAL OR ( gt_header-bsart = '3001' AND gt_header-zzmm_no_esign = 'X' ).
+*      REFRESH lt_line.
+*      PERFORM pf_read_text TABLES lt_line
+*                       USING lv_obj 'F26' 'EKKO' ''.
+*      IF lt_line[] IS NOT INITIAL.
+*        READ TABLE lt_line INDEX 1.
+**        MOVE lt_line-tdline TO gt_header-po_log_date.
+*        CONCATENATE '20' lt_line-tdline+6(2) lt_line-tdline+3(2) lt_line-tdline(2) INTO gt_header-po_log_date.
+*      ENDIF.
+*    ENDIF.
+**>>> EOI CHG-15
+*
+*    MODIFY gt_header.
+*    CLEAR: gt_header, lv_vname_1time.                           "CHG-06
+*  ENDLOOP.
+*ENDFORM.                    " PF_GET_HEADER
+
+*----------------------------------------------------------------------*
+FORM pf_get_header_v2.
+
+  DATA: lt_line TYPE TABLE OF tline WITH HEADER LINE.
+  DATA: lv_name1 TYPE adrc-name1,
+        lv_name2 TYPE adrc-name2,
+        lv_name3 TYPE adrc-name3,
+        lv_name4 TYPE adrc-name4,
+        lv_ktokk TYPE lfa1-ktokk,
+        lv_obj   TYPE thead-tdname.
+  DATA: lt_t024 TYPE TABLE OF t024 WITH HEADER LINE.
+  DATA: BEGIN OF lt_vendor OCCURS 0,
+          lifnr LIKE lfa1-lifnr,
+          name1 LIKE lfa1-name1,
+          name2 LIKE lfa1-name2,
+          name3 LIKE lfa1-name3,
+          name4 LIKE lfa1-name4,
+          ekorg LIKE lfm1-ekorg,
+          zterm LIKE lfm1-zterm,
+          verkf LIKE lfm1-verkf,
+          telf1 LIKE lfm1-telf1,
+          stcd3 LIKE lfa1-stcd3,
+          bankn LIKE lfbk-bankn,
+          koinh LIKE lfbk-koinh,
+          bankl LIKE lfbk-bankl,
+          bkref LIKE lfbk-bkref , "CHG-018
+        END OF lt_vendor.
+
+  DATA: lv_vname_1time    TYPE char200,
+        ls_ztmmdepartment TYPE ztmmdepartment,
+        lv_werks          TYPE werks_d,
+        lv_konnr          TYPE konnr,
+        lv_pr             TYPE banfn,
+        lv_pr_bsart       TYPE bsart.
+
+  DATA: lr_ebeln TYPE RANGE OF ekko-ebeln,
+        ls_ebeln LIKE LINE OF lr_ebeln.
+
+  DATA: lt_pernr      TYPE TABLE OF ty_pernr.
+  DATA: lt_pernr_deli TYPE TABLE OF ty_pernr_deli.
+
+  DATA: lw_sig_name      TYPE ty_sig_name_info,
+        lw_sig_name_deli TYPE ty_sig_name_deli_info,
+        lv_found  TYPE flag."CHG-018
+
+*--->Get header data
+  IF  nast-objky NE space.
+
+    FREE lr_ebeln.
+    CLEAR ls_ebeln.
+    ls_ebeln = 'IEQ'.
+    ls_ebeln-low = nast-objky.
+    APPEND ls_ebeln TO lr_ebeln.
+
+    PERFORM pf_get_header_add TABLES lr_ebeln[].
+
+  ELSE.
+
+    PERFORM pf_get_header_add TABLES s_ebeln[].
+
+  ENDIF.
+
+  SORT gt_header BY ebeln. "<- INC0007778(+)
+  DELETE ADJACENT DUPLICATES FROM gt_header COMPARING ebeln.
+
+  CHECK NOT gt_header[] IS INITIAL.
+
+*--->Get Addr, Tel, Fax and Vendor name
+  SELECT *
+     INTO TABLE lt_t024
+    FROM t024
+    FOR ALL ENTRIES IN gt_header
+  WHERE ekgrp = gt_header-ekgrp.
+
+  SELECT lfa1~lifnr
+         lfa1~name1
+         lfa1~name2
+         lfa1~name3
+         lfa1~name4
+         lfm1~ekorg
+         lfm1~zterm
+         lfm1~verkf
+         lfm1~telf1
+         lfa1~stcd3
+         lfbk~bankn
+         lfbk~koinh
+         lfbk~bankl
+         lfbk~bkref "CHG-18
+    INTO TABLE lt_vendor
+    FROM lfa1
+    INNER JOIN lfm1
+       ON lfa1~lifnr = lfm1~lifnr
+    LEFT JOIN lfbk
+       ON lfa1~lifnr = lfbk~lifnr
+    FOR ALL ENTRIES IN gt_header
+    WHERE lfa1~lifnr = gt_header-lifnr
+  AND lfm1~ekorg = gt_header-ekorg.
+
+* INC0014215 Start ins
+  TYPES: BEGIN OF lty_lfbk,
+           lifnr  TYPE lfbk-lifnr,
+           banks  TYPE lfbk-banks,
+           bankl  TYPE lfbk-bankl,
+           bankn  TYPE lfbk-bankn,
+           koinh  TYPE lfbk-koinh,
+           bkref  TYPE lfbk-bkref,
+           branch TYPE char5,
+         END OF lty_lfbk.
+  DATA: lt_lfbk TYPE TABLE OF lty_lfbk,
+        lv_head(10),
+        lv_trail(10).
+  FIELD-SYMBOLS: <LFS_LFBK_upd> LIKE LINE OF LT_LFBK.
+  SELECT lifnr banks bankl bankn
+         koinh bkref
+  INTO TABLE lt_lfbk
+  FROM lfbk
+  FOR ALL ENTRIES IN gt_header
+  WHERE lifnr EQ gt_header-lifnr.
+  SORT lt_lfbk BY lifnr bankl.
+  LOOP AT lt_lfbk ASSIGNING <LFS_LFBK_upd>.
+    CLEAR: lv_head, lv_trail.
+    SPLIT <lfs_lfbk_upd>-bkref AT SPACE INTO LV_HEAD LV_TRAIL.
+    <LFS_LFBK_upd>-BRANCH = LV_HEAD.
+  ENDLOOP.
+
+* INC0014215: End ins
+
+  LOOP AT gt_header.
+
+    READ TABLE lt_t024 WITH KEY ekgrp = gt_header-ekgrp.
+
+    IF p_poscb = ' '.
+      gt_header-addr = lt_t024-smtp_addr.
+    ENDIF.
+    IF lt_t024-tel_extens NE space.
+      CONCATENATE lt_t024-tel_number '#' lt_t024-tel_extens
+             INTO gt_header-tel.
+    ELSE.
+      gt_header-tel = lt_t024-tel_number.
+    ENDIF.
+
+
+    gt_header-fax = lt_t024-telfx.
+
+    SELECT SINGLE * FROM lfa1
+    WHERE lifnr = gt_header-lifnr.
+    IF sy-subrc = 0.
+
+*== Address  *>>CU_UPG_1809
+      SELECT * UP TO 1 ROWS
+       FROM adrc
+       WHERE addrnumber = lfa1-adrnr
+       ORDER BY addrnumber .
+
+        CONCATENATE adrc-house_num1
+                    adrc-location "++CHG-16
+                    adrc-street
+                    adrc-str_suppl3
+          INTO gt_header-adress SEPARATED BY space.
+
+        CONCATENATE adrc-city2
+                    adrc-city1
+                    adrc-post_code1
+          INTO gt_header-adress2 SEPARATED BY space.
+
+        CONCATENATE adrc-name1
+                    adrc-name2
+                    adrc-name3
+                    adrc-name4
+          INTO lv_vname_1time.
+
+        CONCATENATE adrc-name1
+                    adrc-name2
+                    adrc-name3
+                    adrc-name4
+          INTO gt_header-vname2.
+
+        gt_header-tel_addr = adrc-tel_number.
+        gt_header-fax_addr = adrc-fax_number.
+
+        SELECT SINGLE smtp_addr INTO gt_header-smtp_addr
+                                FROM adr6
+        WHERE addrnumber EQ lfa1-adrnr .
+
+      ENDSELECT.
+    ENDIF.
+
+*<<< BOI CHG-15
+    IF gt_header-zzmm_j_1tpbupl IS NOT INITIAL.
+      SELECT SINGLE ebeln,
+                    c~name1,
+                    c~name2,
+                    c~name3,
+                    c~name4,
+                    b~addrnumber,
+                    house_num1,
+                    location,
+                    street,
+                    str_suppl3,
+                    city2,
+                    city1,
+                    post_code1
+        FROM ekko AS a INNER JOIN fitha_pbupl_k AS b
+                               ON a~lifnr          = b~lifnr
+                              AND a~zzmm_j_1tpbupl = b~j_1tpbupl
+                       INNER JOIN adrc AS c
+                               ON b~addrnumber     = c~addrnumber
+        INTO @DATA(lw_address_j_1tpbupl)
+        WHERE a~ebeln = @gt_header-ebeln
+          AND a~zzmm_j_1tpbupl = @gt_header-zzmm_j_1tpbupl.
+      IF sy-subrc = 0.
+        CLEAR: gt_header-adress,
+               gt_header-adress2,
+               gt_header-vname2.
+        CONCATENATE lw_address_j_1tpbupl-house_num1
+                    lw_address_j_1tpbupl-location "++CHG-17
+                    lw_address_j_1tpbupl-street
+                    lw_address_j_1tpbupl-str_suppl3
+          INTO gt_header-adress SEPARATED BY space.
+
+        CONCATENATE lw_address_j_1tpbupl-city2
+                    lw_address_j_1tpbupl-city1
+                    lw_address_j_1tpbupl-post_code1
+          INTO gt_header-adress2 SEPARATED BY space.
+
+        CONCATENATE lw_address_j_1tpbupl-name1
+                    lw_address_j_1tpbupl-name2
+                    lw_address_j_1tpbupl-name3
+                    lw_address_j_1tpbupl-name4
+          INTO gt_header-vname2 SEPARATED BY space.
+
+        "CHG-21: START INS
+        SELECT tel_number fax_number UP TO 1 ROWS
+          INTO ( gt_header-tel_addr, gt_header-fax_addr )
+          FROM adrc
+          WHERE addrnumber EQ lw_address_j_1tpbupl-addrnumber .
+        ENDSELECT.
+
+        SELECT smtp_addr  UP TO 1 ROWS
+          INTO gt_header-smtp_addr
+          FROM ADR6
+          WHERE addrnumber EQ lw_address_j_1tpbupl-addrnumber .
+        ENDSELECT.
+        "CHG-21: END INS
+      ENDIF.
+    ELSE.
+      IF gt_header-adrnr IS NOT INITIAL.
+        SELECT SINGLE addrnumber,
+                      house_num1,
+                      location,
+                      street,
+                      str_suppl3,
+                      city2,
+                      city1,
+                      post_code1
+          FROM adrc
+          INTO @DATA(lw_address_adrc)
+        WHERE addrnumber = @gt_header-adrnr.
+
+        IF sy-subrc = 0.
+          CLEAR: gt_header-adress, gt_header-adress2.
+          CONCATENATE lw_address_adrc-house_num1
+                      lw_address_adrc-location "++CHG-17
+                      lw_address_adrc-street
+                      lw_address_adrc-str_suppl3
+            INTO gt_header-adress SEPARATED BY space.
+
+          CONCATENATE lw_address_adrc-city2
+                      lw_address_adrc-city1
+                      lw_address_adrc-post_code1
+            INTO gt_header-adress2 SEPARATED BY space.
+        ENDIF.
+      ELSE.
+        SELECT SINGLE b~addrnumber,
+                      house_num1,
+                      location,
+                      street,
+                      str_suppl3,
+                      city2,
+                      city1,
+                      post_code1
+           FROM ekko AS a INNER JOIN fitha_pbupl_k AS b
+                                  ON a~lifnr = b~lifnr
+                          INNER JOIN adrc AS c
+                                  ON b~addrnumber = c~addrnumber
+          INTO CORRESPONDING FIELDS OF @lw_address_j_1tpbupl
+          WHERE a~ebeln = @gt_header-ebeln
+            AND b~j_1tpbupl = '00000'.
+        IF sy-subrc = 0.
+          CLEAR: gt_header-adress,
+                 gt_header-adress2.
+          CONCATENATE lw_address_j_1tpbupl-house_num1
+                      lw_address_j_1tpbupl-location "++CHG-17
+                      lw_address_j_1tpbupl-street
+                      lw_address_j_1tpbupl-str_suppl3
+            INTO gt_header-adress SEPARATED BY space.
+
+          CONCATENATE lw_address_j_1tpbupl-city2
+                      lw_address_j_1tpbupl-city1
+                      lw_address_j_1tpbupl-post_code1
+            INTO gt_header-adress2 SEPARATED BY space.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+*>>> EOI CHG-15
+
+*==Delivery Adress
+*----สถานที่ส่งของ ให้ดึงที่ F63 ก่อน หากไม่มี ให้ดึงที่    ztmmpurchgroup-zdelivery_addres
+    MOVE gt_header-ebeln TO lv_obj.
+    PERFORM pf_read_text TABLES lt_line
+                         USING lv_obj 'F63' 'EKKO' ''.
+
+
+* Start of insert: CHG-06
+    LOOP AT lt_line WHERE tdline IS NOT INITIAL.
+      IF gt_header-delivery IS INITIAL.
+        gt_header-delivery = lt_line-tdline.
+      ELSE.
+        CONCATENATE gt_header-delivery lt_line-tdline
+        INTO gt_header-delivery.
+      ENDIF.
+
+      IF gt_header-foottxt IS INITIAL.
+        gt_header-foottxt = lt_line-tdline.
+      ELSE.
+        CONCATENATE gt_header-foottxt lt_line-tdline
+        INTO gt_header-foottxt.
+      ENDIF.
+    ENDLOOP.
+* End of insert: CHG-06
+
+    SELECT SINGLE * FROM ztmmpurchgroup
+    WHERE zpur_grp = gt_header-ekgrp.
+    IF sy-subrc = 0.
+      gt_header-foottxt  = ztmmpurchgroup-zdelivery_addres.
+      IF p_poscb = ' '.
+        CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+               INTO gt_header-delivery_name SEPARATED BY space.
+      ENDIF.
+      IF sy-ucomm IS INITIAL.
+        gt_header-pur_position1 = p_pos.
+      ELSE.
+        gt_header-pur_position1 = ztmmpurchgroup-zpur_position1.
+        IF p_pos IS INITIAL.
+          gt_header-pur_position1 = ztmmpurchgroup-zpur_position1.
+        ENDIF.
+      ENDIF.
+    ELSE.
+      IF sy-ucomm IS INITIAL.
+        IF p_pos IS INITIAL.
+          gt_header-pur_position1 = ztmmpurchgroup-zpur_position1.
+        ELSE.
+          gt_header-pur_position1 = p_pos.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+* ผู้ติดต่อ
+    gt_header-namsur = p_name.
+
+*<<< BOI CHG-15
+    IF gt_header-ekgrp(2) CP '01'.
+      gt_header-werks = '0100'.
+    ENDIF.
+*>>> EOI CHG-15
+
+*==Tax
+    "CHG-26: Del Start
+*    SELECT * UP TO 1 ROWS
+*      FROM j_1bbranch
+*     WHERE branch = gt_header-werks
+*      ORDER BY branch .
+*      "<<< CHG-06 : Start insert
+*      IF j_1bbranch-stcd1 IS INITIAL.
+*        gt_header-tax = j_1bbranch-stcd2.
+*      ELSE.
+*        gt_header-tax = j_1bbranch-stcd1.
+*      ENDIF.
+*      ">>> CHG-06 : End insert
+*    ENDSELECT.
+    "CHG-26: Del End
+    "CHG-26: Ins Start
+    SELECT a~stcd1, a~stcd2 UP TO 1 ROWS
+      FROM j_1bbranch AS a
+      INNER JOIN t134g AS b
+        ON a~branch = b~gsber
+      INTO @DATA(lwa_stcd)
+      WHERE b~werks = @gt_header-werks.
+    ENDSELECT.
+    IF lwa_stcd-stcd1 IS INITIAL.
+      gt_header-tax = lwa_stcd-stcd2.
+    ELSE.
+      gt_header-tax = lwa_stcd-stcd1.
+    ENDIF.
+    "CHG-26: Ins End
+
+*
+*  CHG018 START INS
+    TYPES: BEGIN OF lty_lfa1,
+                 lifnr TYPE lfa1-lifnr,
+                 ktokk TYPE lfa1-ktokk,
+              END OF lty_lfa1.
+    DATA: lt_lfa1 TYPE TABLE OF lty_lfa1.
+    IF NOT lt_vendor[] IS INITIAL.
+      select lifnr ktokk  INTO TABLE lt_lfa1
+      from lfa1
+      for all entries in lt_vendor
+      where lifnr EQ lt_vendor-lifnr.
+    endif.
+    SORT lt_lfa1 BY lifnr.
+
+*  CHG018 END INS
+*------------------------------------
+
+    READ TABLE lt_vendor WITH KEY lifnr = gt_header-lifnr.
+
+*start add CHG-018
+    LOOP AT lt_vendor WHERE lifnr = gt_header-lifnr.
+      FIND gt_header-zzmm_j_1tpbupl  IN  lt_vendor-bkref.
+      IF sy-subrc = 0 .
+        lv_found = 'X'.
+        EXIT.
+      ENDIF.
+    ENDLOOP.
+    IF lv_found IS INITIAL.
+       READ TABLE lt_vendor WITH KEY lifnr = gt_header-lifnr.
+    ENDIF.
+
+    "Update value -> LFBK by lifnr and bankl
+    DATA: "lv_len TYPE i,
+          lv_branch(5),
+          lv_subrc TYPE sy-subrc.
+    CLEAR: "lv_len,
+                 lv_subrc, lv_branch.
+    IF gt_header-zzmm_j_1tpbupl IS INITIAL.
+      READ TABLE lt_lfa1 INTO DATA(ls_lfa1)
+      WITH KEY lifnr = gt_header-lifnr.
+      IF sy-subrc NE 0.
+        CLEAR ls_lfa1.
+      ENDIF.
+
+      IF ls_lfa1-ktokk EQ 'Z001'.
+        lv_branch = '00000'.
+      ELSE.
+        lv_branch = 'NVAT'.
+      ENDIF.
+    else.
+       lv_branch = gt_header-zzmm_j_1tpbupl .
+    endif.
+*    lv_len = strlen( gt_header-zzmm_j_1tpbupl ).
+    READ TABLE lt_lfbk ASSIGNING FIELD-SYMBOL(<lfs_lfbk>)
+    WITH KEY lifnr  = gt_header-lifnr
+             BRANCH = lv_branch.
+    IF sy-subrc EQ 0.
+      lt_vendor-bankn = <lfs_lfbk>-bankn.
+      lt_vendor-koinh = <lfs_lfbk>-koinh.
+      lt_vendor-bankl = <lfs_lfbk>-bankl.
+      lt_vendor-bkref = <lfs_lfbk>-bkref.
+    ELSE.
+      CLEAR: lt_vendor-bankn,
+             lt_vendor-koinh,
+             lt_vendor-bankl,
+             lt_vendor-bkref.
+    ENDIF.
+*end add CHG-018
+    IF gt_header-vname2 IS INITIAL.
+      CONCATENATE lt_vendor-name1 lt_vendor-name2
+                  lt_vendor-name3 lt_vendor-name4
+             INTO gt_header-vname2.
+    ENDIF.
+    gt_header-stcd3 =  lt_vendor-stcd3 .
+    gt_header-bankn =  lt_vendor-bankn .
+    gt_header-koinh =  lt_vendor-koinh .
+
+    SELECT SINGLE banka INTO gt_header-banka
+                        FROM bnka
+                       WHERE banks EQ 'TH'
+    AND bankl EQ lt_vendor-bankl .
+
+
+
+
+* CHG-018 START DEL
+**<<< BOI CHG-15
+*    LOOP AT lt_vendor TRANSPORTING NO FIELDS WHERE lifnr = gt_header-lifnr
+*                                               AND bankn <> gt_header-bankn.
+*      CLEAR: gt_header-bankn, gt_header-koinh.
+*
+*      SELECT lfa1~lifnr,
+*             lfbk~bankn,
+*             lfbk~koinh,
+*             lfbk~bkref
+*    INTO TABLE @DATA(lt_vendor_temp)
+*    FROM lfa1 INNER JOIN lfm1 ON lfa1~lifnr = lfm1~lifnr
+*              LEFT JOIN  lfbk ON lfa1~lifnr = lfbk~lifnr
+*    WHERE lfa1~lifnr = @gt_header-lifnr.
+*      LOOP AT lt_vendor_temp INTO DATA(ls_vendor_temp)
+*        WHERE bkref(5) = gt_header-zzmm_j_1tpbupl.
+*        gt_header-bankn = ls_vendor_temp-bankn.
+*        gt_header-koinh = ls_vendor_temp-koinh.
+*        EXIT.
+*      ENDLOOP.
+*    ENDLOOP.
+**>>> EOI CHG-15
+* CHG018 - END DEL
+
+* Start of insert: CHG-06
+* Get Name & Address of Contract
+    SELECT SINGLE werks konnr
+                        FROM ekpo
+                        INTO  ( lv_werks, lv_konnr )
+                        WHERE ebeln EQ gt_header-ebeln
+    AND loekz EQ ' ' .
+
+*<<< BOI CHG-15
+    IF gt_header-ekgrp(2) CP '01'.
+      lv_werks = '0100'.
+    ENDIF.
+*>>> EOI CHG-15
+
+    CLEAR ls_ztmmdepartment.
+    SELECT SINGLE * INTO ls_ztmmdepartment
+      FROM ztmmdepartment
+    WHERE zno = lv_werks.
+    IF sy-subrc = 0.
+      MOVE: ls_ztmmdepartment-zdesc  TO gt_header-vname,
+            ls_ztmmdepartment-zaddress1 TO gt_header-vadress,
+            ls_ztmmdepartment-zaddress2 TO gt_header-vadress2.
+    ENDIF.
+*>  Begin ins by CHG-15
+    IF g_page = '2' AND gt_header-ekgrp CP '01*'.
+      gt_header-vname = 'สำนักงานมหาวิทยาลัย จุฬาลงกรณ์มหาวิทยาลัย'.
+    ENDIF.
+*<  End ins by CHG-15
+* End of insert: CHG-06
+*-------------------------------------------
+
+    SELECT SINGLE ktokk
+           INTO   lv_ktokk
+           FROM  lfa1
+    WHERE  lifnr = gt_header-lifnr.
+    IF lv_ktokk = 'Z002'. " <<<<<Change V2  "ถึง" 13/11/2007
+    ELSE.
+      MOVE 'ผู้จัดการ'  TO gt_header-to .
+      IF lv_ktokk = 'ZONE'. "One-time Vendor
+        gt_header-vname2 = lv_vname_1time.
+      ENDIF.
+    ENDIF.
+
+    IF gt_header-bsart = '3001' AND
+       gt_header-zzmm_no_esign IS INITIAL.
+
+      IF gt_header-frgke = 'F'.
+        SELECT * UP TO 1 ROWS
+          FROM ztwf_po_log
+          INTO @DATA(lw_ztwf_po_log)
+          WHERE ebeln  = @gt_header-ebeln
+          AND frgco = '33'
+          ORDER BY crdate DESCENDING ,
+                   crtime DESCENDING.
+        ENDSELECT.
+
+        IF sy-subrc = 0.
+
+          IF lw_ztwf_po_log-aprv_ttxt = '01'.
+
+            FREE: lt_pernr,
+                  lt_pernr_deli.
+            PERFORM pf_get_lt_pernr_info_1 TABLES lt_pernr
+                                                  lt_pernr_deli
+                                           USING  lw_ztwf_po_log.
+
+          ELSE.
+*<<< BOI CHG-15
+            IF lw_ztwf_po_log-us_name IS NOT INITIAL.
+
+              FREE: lt_pernr,
+                    lt_pernr_deli.
+              PERFORM pf_get_lt_pernr_info_2 TABLES lt_pernr
+                                                    lt_pernr_deli
+                                             USING  lw_ztwf_po_log.
+
+
+            ELSE.
+
+              FREE: lt_pernr,
+                    lt_pernr_deli.
+              PERFORM pf_get_lt_pernr_info_3 TABLES lt_pernr
+                                                    lt_pernr_deli
+                                             USING  lw_ztwf_po_log.
+
+            ENDIF.
+          ENDIF.
+
+*>>> EOI CHG-15
+          IF lw_ztwf_po_log-us_name IS INITIAL .
+
+            LOOP AT lt_pernr INTO DATA(lw_pernr_chk).
+              IF gt_header-ekgrp CP lw_pernr_chk-ekgrp AND
+                 gt_header-fistl CP lw_pernr_chk-fistl AND
+                 gt_header-geber CP lw_pernr_chk-geber.
+              ELSE.
+                DELETE lt_pernr.
+              ENDIF.
+            ENDLOOP.
+            LOOP AT lt_pernr_deli INTO lw_pernr_chk.
+              IF gt_header-ekgrp CP lw_pernr_chk-ekgrp AND
+                 gt_header-fistl CP lw_pernr_chk-fistl AND
+                 gt_header-geber CP lw_pernr_chk-geber.
+              ELSE.
+                DELETE lt_pernr_deli.
+              ENDIF.
+            ENDLOOP.
+
+          ENDIF.
+
+          SORT lt_pernr BY frggr   ASCENDING
+                           frgco   ASCENDING
+                           ekgrp   ASCENDING
+                           fistl   DESCENDING
+                           geber   DESCENDING
+                           xubname ASCENDING.
+
+          CLEAR: v_flag_name.
+          LOOP AT lt_pernr INTO DATA(lw_pernr).
+*-> Begin: INC0009132-2(-)
+*            IF gt_header-ekgrp CP lw_pernr-ekgrp AND
+*               gt_header-fistl CP lw_pernr-fistl AND
+*               gt_header-geber CP lw_pernr-geber AND
+*               ( ( lw_pernr-frggr  EQ 'PO' AND lw_pernr-frgco EQ '33' ) OR
+*                 ( lw_pernr-frggr  EQ 'DE' ) ).
+*              " pass
+*            ELSE.
+*              " skip this record
+*              CONTINUE.
+*            ENDIF.
+*<- End: INC0009132-2(-)
+
+            IF gt_header-ekgrp CP lw_pernr-ekgrp AND
+               gt_header-fistl CP lw_pernr-fistl AND
+               gt_header-geber CP lw_pernr-geber AND
+               v_flag_name     IS INITIAL.
+
+*-> Begin: INC0009132-2(+)
+              IF lw_ztwf_po_log-aprv_ttxt = '01'.
+                IF lw_pernr-frggr  EQ 'PO' AND lw_pernr-frgco EQ '33'.
+                  "-Pass
+                ELSEIF lw_pernr-frggr  EQ 'DE'.
+                  READ TABLE lt_pernr INTO DATA(ls_pernr_sub) WITH KEY frggr = 'PO' frgco = '33'.
+                  IF sy-subrc = 0
+                    AND gt_header-ekgrp CP ls_pernr_sub-ekgrp AND
+                        gt_header-fistl CP ls_pernr_sub-fistl AND
+                        gt_header-geber CP ls_pernr_sub-geber.
+                    CONTINUE.
+                  ENDIF.
+                ELSE.
+                  CONTINUE.
+                ENDIF.
+
+              ELSEIF lw_ztwf_po_log-aprv_ttxt = '02'.
+                IF lw_pernr-frggr EQ 'DE'.
+                  "-Pass
+                ELSE.
+                  CONTINUE.
+                ENDIF.
+
+              ELSE.
+                IF lw_pernr-frggr  EQ 'PO' AND lw_pernr-frgco EQ '33'.
+                  "-Pass
+                ELSE.
+                  CONTINUE.
+                ENDIF.
+
+              ENDIF.
+*<- End: INC0009132-2(+)
+
+              v_flag_name = 'X'.
+
+              CLEAR lw_sig_name.
+              PERFORM pf_get_sig_name_info USING    lw_pernr
+                                                    lw_ztwf_po_log
+                                           CHANGING lw_sig_name.
+
+              IF sy-subrc = 0.
+*                gv_sign_10 = lw_sig_name-esign.      "<-INC0008051(-)
+                gt_header-esign = lw_sig_name-esign.  "<-INC0008051(+)
+
+                IF lw_sig_name-plans_9001 IS NOT INITIAL.
+                  SELECT SINGLE tline
+                    INTO @DATA(lv_hrt1002_tline)
+                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b
+                                              ON a~tabnr = b~tabnr
+                    WHERE ( objid = @lw_sig_name-pernr OR
+                            objid = @lw_sig_name-plans_9001 )
+                      AND subty  = '9001'
+                      AND endda >= @lw_ztwf_po_log-crdate
+                      AND begda <= @lw_ztwf_po_log-crdate.
+
+                ELSEIF lw_sig_name-plans_0001 IS NOT INITIAL.
+                  SELECT SINGLE tline
+                    INTO @lv_hrt1002_tline
+                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b
+                                              ON a~tabnr = b~tabnr
+                    WHERE ( objid = @lw_sig_name-pernr OR
+                            objid = @lw_sig_name-plans_0001 )
+                      AND subty  = '9001'
+                      AND endda >= @lw_ztwf_po_log-crdate
+                      AND begda <= @lw_ztwf_po_log-crdate.
+                ENDIF.
+
+                IF lv_hrt1002_tline IS NOT INITIAL.
+                  gt_header-t13_txt2 = lv_hrt1002_tline.
+                ELSE.
+                  gt_header-t13_txt2 = lw_sig_name-tline.
+                ENDIF.
+
+                IF lw_sig_name-knznm = '01'.
+                  CLEAR: gv_fullname.
+                  CALL FUNCTION 'ZHR_GET_TITLENAME'
+                    EXPORTING
+                      pernr     = lw_pernr-pernr
+                    IMPORTING
+                      full_name = gv_fullname.
+                  MOVE gv_fullname TO gt_header-t13_txt1.
+                ELSE.
+                  IF lw_sig_name-vorsw_pa IS NOT INITIAL OR
+                     lw_sig_name-titl2_pa IS NOT INITIAL.
+                    gt_header-t13_txt1 = lw_sig_name-vorsw_pa && lw_sig_name-titl2_pa.
+                  ELSE.
+                    gt_header-t13_txt3 = lw_sig_name-anrlt_t522t.
+                  ENDIF.
+                  IF gt_header-t13_txt1 IS INITIAL OR
+                     gt_header-t13_txt3 IS INITIAL.
+                    IF lw_sig_name-vorsw_sig IS NOT INITIAL.
+                      gt_header-t13_txt1 = lw_sig_name-vorsw_sig.
+                    ELSE.
+                      gt_header-t13_txt3 = lw_sig_name-anrlt_sig.
+                    ENDIF.
+                  ENDIF.
+                ENDIF.
+
+*-> Begin: INC0009132(-)
+*                IF lw_sig_name-vorna_sig IS NOT INITIAL AND
+*                   lw_sig_name-nachn_sig IS NOT INITIAL.
+*                  gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_sig.
+*                  gt_header-t13_txt4 = lw_sig_name-nachn_sig.
+*                ELSE.
+*                  gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_pa.
+*                  gt_header-t13_txt4 = lw_sig_name-nachn_pa.
+*                ENDIF.
+*<- End: INC0009132(-)
+
+*-> Begin: INC0009132(+)
+                IF lw_sig_name-vorna_pa IS NOT INITIAL AND
+                   lw_sig_name-nachn_pa IS NOT INITIAL.
+                  gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_pa.
+                  gt_header-t13_txt4 = lw_sig_name-nachn_pa.
+                ELSE.
+                  gt_header-t13_txt3 = gt_header-t13_txt3 && lw_sig_name-vorna_sig.
+                  gt_header-t13_txt4 = lw_sig_name-nachn_sig.
+                ENDIF.
+*<- End: INC0009132(+)
+
+              ENDIF.
+            ENDIF.
+          ENDLOOP.
+
+*<<< BOI CHG-15
+          SORT lt_pernr_deli BY fistl DESCENDING geber DESCENDING.
+          CLEAR: v_flag_name_deli.
+          LOOP AT lt_pernr_deli INTO DATA(lw_pernr_deli).
+
+            IF lw_ztwf_po_log-aprv_ttxt = '01'.
+*-> Begin: INC0009132-2(+)
+              IF lw_pernr_deli-frggr  EQ 'PO' AND lw_pernr_deli-frgco EQ '33'.
+                "-Pass
+              ELSEIF lw_pernr_deli-frggr  EQ 'DE'.
+                READ TABLE lt_pernr_deli INTO DATA(ls_pernr_deli_sub) WITH KEY frggr = 'PO' frgco = '33'.
+                IF sy-subrc = 0
+                  AND gt_header-ekgrp CP ls_pernr_deli_sub-ekgrp AND
+                      gt_header-fistl CP ls_pernr_deli_sub-fistl AND
+                      gt_header-geber CP ls_pernr_deli_sub-geber.
+                  CONTINUE.
+                ENDIF.
+              ELSE.
+                CONTINUE.
+              ENDIF.
+*<- End: INC0009132-2(+)
+
+              lw_pernr_deli-pernr = lw_pernr_deli-pernr_owner.
+*-> Begin: INC0009132-2(+)
+            ELSEIF lw_ztwf_po_log-aprv_ttxt = '02'.
+*              IF lw_pernr_deli-frggr EQ 'PO'.                                    "CHG-24: Delete
+              IF lw_pernr_deli-frggr EQ 'PO' AND lw_pernr_deli-frgco EQ '33'.       "CHG-24: Insert
+                "-Pass
+              ELSE.
+                CONTINUE.
+              ENDIF.
+
+            ELSE.
+*<- End: INC0009132-2(+)
+            ENDIF.
+
+
+            IF gt_header-ekgrp CP lw_pernr_deli-ekgrp AND
+               gt_header-fistl CP lw_pernr_deli-fistl AND
+               gt_header-geber CP lw_pernr_deli-geber AND
+               v_flag_name_deli IS INITIAL.
+
+              v_flag_name_deli = 'X'.
+
+              CLEAR lw_sig_name_deli.
+              PERFORM pf_get_sig_name_deli_info USING    lw_pernr_deli
+                                                         lw_ztwf_po_log
+                                                CHANGING lw_sig_name_deli.
+
+              IF sy-subrc = 0.
+                IF lw_sig_name_deli-plans_9001 IS NOT INITIAL.
+                  SELECT SINGLE tline
+                    INTO @DATA(lv_hrt1002_tline_deli)
+                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+                    WHERE ( objid = @lw_sig_name_deli-pernr OR
+                            objid = @lw_sig_name_deli-plans_9001 )
+                      AND subty  = '9001'
+                      AND endda >= @lw_ztwf_po_log-crdate
+                      AND begda <= @lw_ztwf_po_log-crdate.
+
+                ELSEIF lw_sig_name_deli-plans_0001 IS NOT INITIAL.
+
+                  SELECT SINGLE tline
+                    INTO @lv_hrt1002_tline_deli
+                    FROM hrp1002 AS a INNER JOIN hrt1002 AS b ON a~tabnr = b~tabnr
+                    WHERE ( objid = @lw_sig_name_deli-pernr OR
+                            objid = @lw_sig_name_deli-plans_0001 )
+                      AND subty  = '9001'
+                      AND endda >= @lw_ztwf_po_log-crdate
+                      AND begda <= @lw_ztwf_po_log-crdate.
+                ENDIF.
+
+                IF lv_hrt1002_tline_deli IS NOT INITIAL.
+                  DATA(lv_posi_deli) = lv_hrt1002_tline_deli.
+                ELSE.
+                  lv_posi_deli = lw_sig_name_deli-tline.
+                ENDIF.
+              ENDIF.
+            ENDIF.
+          ENDLOOP.
+
+          IF lw_ztwf_po_log-aprv_ttxt IS NOT INITIAL AND gt_header-t13_txt2 IS NOT INITIAL.
+            CASE lw_ztwf_po_log-aprv_ttxt.
+              WHEN '01'.
+                CONCATENATE gt_header-t13_txt2 'ปฏิบัติการแทน'
+                            lv_posi_deli
+                  INTO gt_header-t13_txt2 SEPARATED BY space.
+              WHEN '02'.
+                CONCATENATE gt_header-t13_txt2 'รักษาการแทน'
+                            lv_posi_deli
+                  INTO gt_header-t13_txt2 SEPARATED BY space.
+            ENDCASE.
+          ENDIF.
+*>>> EOI CHG-15
+
+        ENDIF.
+
+*<<< BOI CHG-15
+        IF gt_header-frgke EQ 'F'.
+          SELECT SINGLE MAX( crdate )
+            FROM ztwf_po_log
+            INTO gt_header-po_log_date
+            WHERE ebeln EQ  gt_header-ebeln.
+        ENDIF.
+*>>> EOI CHG-15
+
+      ELSE.
+        IF gt_header-zmmacto_vorna IS NOT INITIAL.
+          gt_header-t13_txt1 = gt_header-zmmacto_vorna.
+          gt_header-t13_txt3 = gt_header-zmmacto_nach2.
+          gt_header-t13_txt2 = gt_header-zmmacto_stext.
+        ELSE.
+          gt_header-t13_txt1 = gt_header-zmmapp_vorna.
+          gt_header-t13_txt3 = gt_header-zmmapp_nach2.
+          gt_header-t13_txt2 = gt_header-zmmapp_stext.
+        ENDIF.
+      ENDIF.
+
+    ELSEIF gt_header-bsart CP '5*'.
+
+      IF gt_header-zmmacto_vorna IS NOT INITIAL.
+        gt_header-t13_txt1 = gt_header-zmmacto_vorna.
+        gt_header-t13_txt3 = gt_header-zmmacto_nach2.
+        gt_header-t13_txt2 = gt_header-zmmacto_stext.
+      ELSE.
+        gt_header-t13_txt1 = gt_header-zmmapp_vorna.
+        gt_header-t13_txt3 = gt_header-zmmapp_nach2.
+        gt_header-t13_txt2 = gt_header-zmmapp_stext.
+      ENDIF.
+    ELSE.
+
+      IF gt_header-zmmacto_vorna IS NOT INITIAL.
+        gt_header-t13_txt1 = gt_header-zmmacto_vorna.
+        gt_header-t13_txt3 = gt_header-zmmacto_nach2.
+        gt_header-t13_txt2 = gt_header-zmmacto_stext.
+      ELSE.
+        gt_header-t13_txt1 = gt_header-zmmapp_vorna.
+        gt_header-t13_txt3 = gt_header-zmmapp_nach2.
+        gt_header-t13_txt2 = gt_header-zmmapp_stext.
+      ENDIF.
+
+    ENDIF.
+
+*<<< BOI CHG-15
+    IF gt_header-po_log_date IS INITIAL OR
+       ( gt_header-bsart = '3001' AND gt_header-zzmm_no_esign = 'X' ).
+      REFRESH lt_line.
+      PERFORM pf_read_text TABLES lt_line
+                           USING  lv_obj 'F26' 'EKKO' ''.
+      IF lt_line[] IS NOT INITIAL.
+        READ TABLE lt_line INDEX 1.
+        CONCATENATE '20'
+                    lt_line-tdline+6(2)
+                    lt_line-tdline+3(2)
+                    lt_line-tdline(2)
+          INTO gt_header-po_log_date.
+      ENDIF.
+    ENDIF.
+*>>> EOI CHG-15
+
+    MODIFY gt_header.
+    CLEAR: gt_header, lv_vname_1time.
+  ENDLOOP.
+
+ENDFORM.
+
+*----------------------------------------------------------------------*
+FORM pf_get_lt_pernr_info_1 TABLES t_pernr         TYPE STANDARD TABLE
+                                   t_pernr_deli    TYPE STANDARD TABLE
+                            USING VALUE(us_po_log) TYPE ztwf_po_log.
+
+  DATA: lt_pernr      TYPE TABLE OF ty_pernr,
+        lt_pernr_deli TYPE TABLE OF ty_pernr_deli.
+  DATA: lw_ztwf_po_log TYPE ztwf_po_log.
+
+*----------------------------------------------------------------------*
+  lw_ztwf_po_log = us_po_log.
+*----------------------------------------------------------------------*
+*-> Begin: INC0009132-2(-+)
+*  SELECT pernr,
+*         fistl,
+*         geber,
+*         xubname,
+*         ekgrp ,
+*         pernr_owner
+*    FROM ztmm_rel_user
+*    INTO TABLE @lt_pernr_deli
+*   WHERE name_owner =  @lw_ztwf_po_log-us_name
+*     AND begda      <= @lw_ztwf_po_log-crdate
+*     AND endda      >= @lw_ztwf_po_log-crdate.
+*
+*  SELECT frggr      ,
+*         frgco      ,
+*         ekgrp      ,
+*         fistl      ,
+*         geber      ,
+*         xubname    ,
+*
+*         pernr      ,
+*         endda      ,
+*         begda      ,
+*         pernr_owner,
+*         name_owner ,
+*
+*         crdate     ,
+*         crtime     ,
+*         cruser     ,
+*         chdate     ,
+*         chtime     ,
+*         chuser
+*    FROM ztmm_rel_user
+*    INTO TABLE @lt_pernr
+*    WHERE xubname = @lw_ztwf_po_log-cruser
+*      ORDER BY PRIMARY KEY.
+
+  SELECT *
+    FROM ztmm_rel_user
+    INTO TABLE @lt_pernr_deli
+  WHERE name_owner =  @lw_ztwf_po_log-us_name
+    AND xubname    = @lw_ztwf_po_log-cruser
+    AND begda      <= @lw_ztwf_po_log-crdate
+    AND endda      >= @lw_ztwf_po_log-crdate.
+
+  SELECT frggr      ,
+         frgco      ,
+         ekgrp      ,
+         fistl      ,
+         geber      ,
+         xubname    ,
+
+         pernr      ,
+         endda      ,
+         begda      ,
+         pernr_owner,
+         name_owner ,
+
+         crdate     ,
+         crtime     ,
+         cruser     ,
+         chdate     ,
+         chtime     ,
+         chuser
+    FROM ztmm_rel_user
+    INTO TABLE @lt_pernr
+    WHERE xubname = @lw_ztwf_po_log-cruser
+      AND begda   <= @lw_ztwf_po_log-crdate
+      AND endda   >= @lw_ztwf_po_log-crdate
+      ORDER BY PRIMARY KEY.
+*<- End: INC0009132-2(-+)
+
+*----------------------------------------------------------------------*
+  t_pernr[]      = lt_pernr[].
+  t_pernr_deli[] = lt_pernr_deli[].
+*----------------------------------------------------------------------*
+
+ENDFORM.
+
+*----------------------------------------------------------------------*
+FORM pf_get_lt_pernr_info_2 TABLES t_pernr         TYPE STANDARD TABLE
+                                   t_pernr_deli    TYPE STANDARD TABLE
+                            USING VALUE(us_po_log) TYPE ztwf_po_log.
+
+  DATA: lt_pernr      TYPE TABLE OF ty_pernr,
+        lt_pernr_deli TYPE TABLE OF ty_pernr_deli.
+  DATA: lw_ztwf_po_log TYPE ztwf_po_log.
+
+*----------------------------------------------------------------------*
+  lw_ztwf_po_log = us_po_log.
+*----------------------------------------------------------------------*
+
+*-> Begin: INC0009132-2(-+)
+*  SELECT pernr,
+*         fistl,
+*         geber,
+*         xubname,
+*         ekgrp ,
+*         pernr_owner
+*    FROM ztmm_rel_user
+*    INTO TABLE @lt_pernr_deli
+*   WHERE xubname = @lw_ztwf_po_log-us_name.
+
+  SELECT *
+    FROM ztmm_rel_user
+    INTO TABLE @lt_pernr_deli
+  WHERE xubname = @lw_ztwf_po_log-us_name
+      AND begda   <= @lw_ztwf_po_log-crdate
+      AND endda   >= @lw_ztwf_po_log-crdate.
+*<- End: INC0009132-2(-+)
+
+  SELECT frggr      ,
+         frgco      ,
+         ekgrp      ,
+         fistl      ,
+         geber      ,
+         xubname    ,
+
+         pernr      ,
+         endda      ,
+         begda      ,
+         pernr_owner,
+         name_owner ,
+
+         crdate     ,
+         crtime     ,
+         cruser     ,
+         chdate     ,
+         chtime     ,
+         chuser
+    FROM ztmm_rel_user
+    INTO TABLE @lt_pernr
+    WHERE xubname = @lw_ztwf_po_log-cruser
+*-> Begin: INC0009132-2(+)
+      AND begda   <= @lw_ztwf_po_log-crdate
+      AND endda   >= @lw_ztwf_po_log-crdate
+*<- End: INC0009132-2(+)
+      ORDER BY PRIMARY KEY.
+
+*----------------------------------------------------------------------*
+  t_pernr[]      = lt_pernr[].
+  t_pernr_deli[] = lt_pernr_deli[].
+*----------------------------------------------------------------------*
+
+ENDFORM.
+
+*----------------------------------------------------------------------*
+FORM pf_get_lt_pernr_info_3 TABLES t_pernr         TYPE STANDARD TABLE
+                                   t_pernr_deli    TYPE STANDARD TABLE
+                            USING VALUE(us_po_log) TYPE ztwf_po_log.
+
+  DATA: lt_pernr      TYPE TABLE OF ty_pernr,
+        lt_pernr_deli TYPE TABLE OF ty_pernr_deli.
+  DATA: lw_ztwf_po_log TYPE ztwf_po_log.
+
+*----------------------------------------------------------------------*
+  lw_ztwf_po_log = us_po_log.
+*----------------------------------------------------------------------*
+
+  SELECT frggr      ,
+         frgco      ,
+         ekgrp      ,
+         fistl      ,
+         geber      ,
+         xubname    ,
+
+         pernr      ,
+         endda      ,
+         begda      ,
+         pernr_owner,
+         name_owner ,
+
+         crdate     ,
+         crtime     ,
+         cruser     ,
+         chdate     ,
+         chtime     ,
+         chuser
+    FROM ztmm_rel_user
+    INTO TABLE @lt_pernr
+    WHERE xubname =  @lw_ztwf_po_log-cruser
+      AND endda   >= @lw_ztwf_po_log-crdate
+      AND begda   <= @lw_ztwf_po_log-crdate
+      AND frgco   =  '33'
+      ORDER BY PRIMARY KEY.
+
+*----------------------------------------------------------------------*
+  t_pernr[]      = lt_pernr[].
+  t_pernr_deli[] = lt_pernr_deli[].
+*----------------------------------------------------------------------*
+
+ENDFORM.
+
+*----------------------------------------------------------------------*
+FORM pf_get_sig_name_info USING VALUE(us_pernr)   TYPE ty_pernr
+                                VALUE(us_po_log)  TYPE ztwf_po_log
+                          CHANGING    cs_sig_name TYPE ty_sig_name_info.
+
+  DATA: lw_pernr       TYPE ty_pernr,
+        lw_ztwf_po_log TYPE ztwf_po_log.
+  DATA: lw_sig_name    TYPE ty_sig_name_info.
+
+*----------------------------------------------------------------------*
+  lw_pernr       = us_pernr.
+  lw_ztwf_po_log = us_po_log.
+*----------------------------------------------------------------------*
+
+* >> CHG-23: Start Delete
+*  SELECT SINGLE a~pernr,
+*                a~vorna AS vorna_sig,
+*                a~nachn AS nachn_sig,
+*                a~vorsw AS vorsw_sig,
+*                a~anrlt AS anrlt_sig,
+*
+*                b~vorna AS vorna_pa,
+*                b~nachn AS nachn_pa,
+*                b~vorsw AS vorsw_pa,
+*                b~titl2 AS titl2_pa,
+*                b~knznm,
+*
+*                esign,
+*                stext,
+*                tline,
+*
+*                c~plans AS plans_9001,
+*                d~plans AS plans_0001,
+*                e~anrlt AS anrlt_t522t
+*
+*  INTO @lw_sig_name
+*  FROM ztbc_signature AS a LEFT JOIN pa0002 AS b ON a~pernr = b~pernr
+*                                                AND b~begda <= @lw_ztwf_po_log-crdate
+*                                                AND b~endda >= @lw_ztwf_po_log-crdate
+*                           LEFT JOIN pa9001 AS c ON a~pernr = c~pernr
+*                                                AND c~begda <= @lw_ztwf_po_log-crdate
+*                                                AND c~endda >= @lw_ztwf_po_log-crdate
+**                                                AND c~subty = '0001'                  "CHG-23: Delete
+*                                                AND ( c~subty = '0001'                  "CHG-23: Insert
+*                                                   OR c~subty = '0002'                  "CHG-23: Insert
+*                                                   OR c~subty = '0003' )                "CHG-23: Insert
+*                           LEFT JOIN pa0001 AS d ON a~pernr = d~pernr
+*                                                AND d~begda <= @lw_ztwf_po_log-crdate
+*                                                AND d~endda >= @lw_ztwf_po_log-crdate
+*                           LEFT JOIN t522t  AS e ON b~anred = e~anred
+*                                                AND e~sprsl = '2'                       "CHG-23: Insert
+*  WHERE a~pernr = @lw_pernr-pernr
+*    AND a~begda <= @lw_ztwf_po_log-crdate
+*    AND a~endda >= @lw_ztwf_po_log-crdate.
+* << CHG-23: End Delete
+
+* >> CHG-23: Start Insert
+  SELECT        a~pernr,
+                a~vorna AS vorna_sig,
+                a~nachn AS nachn_sig,
+                a~vorsw AS vorsw_sig,
+                a~anrlt AS anrlt_sig,
+
+                b~vorna AS vorna_pa,
+                b~nachn AS nachn_pa,
+                b~vorsw AS vorsw_pa,
+                b~titl2 AS titl2_pa,
+                b~knznm,
+
+                esign,
+                stext,
+                tline,
+                c~subty,                        "CHG-23: Insert
+
+                c~plans AS plans_9001,
+                d~plans AS plans_0001,
+                e~anrlt AS anrlt_t522t
+
+  INTO TABLE @DATA(lt_sig_name)
+  FROM ztbc_signature AS a LEFT JOIN pa0002 AS b ON a~pernr = b~pernr
+                                                AND b~begda <= @lw_ztwf_po_log-crdate
+                                                AND b~endda >= @lw_ztwf_po_log-crdate
+                           LEFT JOIN pa9001 AS c ON a~pernr = c~pernr
+                                                AND c~begda <= @lw_ztwf_po_log-crdate
+                                                AND c~endda >= @lw_ztwf_po_log-crdate
+*                                                AND c~subty = '0001'                  "CHG-23: Delete
+                                                AND ( c~subty = '0001'                  "CHG-23: Insert
+                                                   OR c~subty = '0002'                  "CHG-23: Insert
+                                                   OR c~subty = '0003' )                "CHG-23: Insert
+                           LEFT JOIN pa0001 AS d ON a~pernr = d~pernr
+                                                AND d~begda <= @lw_ztwf_po_log-crdate
+                                                AND d~endda >= @lw_ztwf_po_log-crdate
+                           LEFT JOIN t522t  AS e ON b~anred = e~anred
+                                                AND e~sprsl = '2'                       "CHG-23: Insert
+  WHERE a~pernr = @lw_pernr-pernr
+    AND a~begda <= @lw_ztwf_po_log-crdate
+    AND a~endda >= @lw_ztwf_po_log-crdate.
+
+  IF sy-subrc EQ 0.
+    SORT lt_sig_name BY subty.
+    READ TABLE lt_sig_name INTO lw_sig_name INDEX 1.
+  ENDIF.
+* << CHG-23: End Insert
+
+*----------------------------------------------------------------------*
+  cs_sig_name = lw_sig_name.
+*----------------------------------------------------------------------*
+
+ENDFORM.
+
+*----------------------------------------------------------------------*
+FORM pf_get_sig_name_deli_info
+                USING VALUE(us_pernr_deli)   TYPE ty_pernr_deli
+                      VALUE(us_po_log)       TYPE ztwf_po_log
+                CHANGING    cs_sig_name_deli TYPE ty_sig_name_deli_info.
+
+  DATA: lw_pernr_deli  TYPE ty_pernr_deli,
+        lw_ztwf_po_log TYPE ztwf_po_log.
+  DATA: lw_sig_name_deli TYPE ty_sig_name_deli_info.
+
+*----------------------------------------------------------------------*
+  lw_pernr_deli  = us_pernr_deli.
+  lw_ztwf_po_log = us_po_log.
+*----------------------------------------------------------------------*
+
+* >> CHG-23: Start Delete
+*  SELECT SINGLE a~pernr,
+*                a~vorna AS vorna_sig,
+*                a~nachn AS nachn_sig,
+*                a~vorsw AS vorsw_sig,
+*                a~anrlt AS anrlt_sig,
+*
+*                b~vorna AS vorna_pa,
+*                b~nachn AS nachn_pa,
+*                b~vorsw AS vorsw_pa,
+*                b~titl2 AS titl2_pa,
+*
+*                esign,
+*                stext,
+*                tline,
+*                c~subty,
+*
+*                c~plans AS plans_9001,
+*                d~plans AS plans_0001,
+*                e~anrlt AS anrlt_t522t
+*
+*  INTO @lw_sig_name_deli
+*  FROM ztbc_signature AS a LEFT JOIN pa0002 AS b ON a~pernr = b~pernr
+*                                                AND b~begda <= @lw_ztwf_po_log-crdate
+*                                                AND b~endda >= @lw_ztwf_po_log-crdate
+*                           LEFT JOIN pa9001 AS c ON a~pernr = c~pernr
+*                                                AND c~begda <= @lw_ztwf_po_log-crdate
+*                                                AND c~endda >= @lw_ztwf_po_log-crdate
+**                                                AND c~subty = '0001'                 "CHG-23: Delete
+*                                                AND ( c~subty = '0001'                  "CHG-23: Insert
+*                                                   OR c~subty = '0002'                  "CHG-23: Insert
+*                                                   OR c~subty = '0003' )                "CHG-23: Insert
+*                           LEFT JOIN pa0001 AS d ON a~pernr = d~pernr
+*                                                AND d~begda <= @lw_ztwf_po_log-crdate
+*                                                AND d~endda >= @lw_ztwf_po_log-crdate
+*                           LEFT JOIN t522t  AS e ON b~anred = e~anred
+*                                                AND e~sprsl = '2'                       "CHG-23: Insert
+*  WHERE a~pernr =  @lw_pernr_deli-pernr
+*    AND a~begda <= @lw_ztwf_po_log-crdate
+*    AND a~endda >= @lw_ztwf_po_log-crdate.
+* << CHG-23: End Delete
+
+* >> CHG-23: Start Insert
+  SELECT        a~pernr,
+                a~vorna AS vorna_sig,
+                a~nachn AS nachn_sig,
+                a~vorsw AS vorsw_sig,
+                a~anrlt AS anrlt_sig,
+
+                b~vorna AS vorna_pa,
+                b~nachn AS nachn_pa,
+                b~vorsw AS vorsw_pa,
+                b~titl2 AS titl2_pa,
+
+                esign,
+                stext,
+                tline,
+                c~subty,
+
+                c~plans AS plans_9001,
+                d~plans AS plans_0001,
+                e~anrlt AS anrlt_t522t
+
+  INTO TABLE @DATA(lt_sig_name_deli)
+  FROM ztbc_signature AS a LEFT JOIN pa0002 AS b ON a~pernr = b~pernr
+                                                AND b~begda <= @lw_ztwf_po_log-crdate
+                                                AND b~endda >= @lw_ztwf_po_log-crdate
+                           LEFT JOIN pa9001 AS c ON a~pernr = c~pernr
+                                                AND c~begda <= @lw_ztwf_po_log-crdate
+                                                AND c~endda >= @lw_ztwf_po_log-crdate
+*                                                AND c~subty = '0001'                 "CHG-23: Delete
+                                                AND ( c~subty = '0001'                  "CHG-23: Insert
+                                                   OR c~subty = '0002'                  "CHG-23: Insert
+                                                   OR c~subty = '0003' )                "CHG-23: Insert
+                           LEFT JOIN pa0001 AS d ON a~pernr = d~pernr
+                                                AND d~begda <= @lw_ztwf_po_log-crdate
+                                                AND d~endda >= @lw_ztwf_po_log-crdate
+                           LEFT JOIN t522t  AS e ON b~anred = e~anred
+                                                AND e~sprsl = '2'                       "CHG-23: Insert
+  WHERE a~pernr =  @lw_pernr_deli-pernr
+    AND a~begda <= @lw_ztwf_po_log-crdate
+    AND a~endda >= @lw_ztwf_po_log-crdate.
+
+  IF sy-subrc EQ 0.
+    SORT lt_sig_name_deli BY subty.
+    READ TABLE lt_sig_name_deli INTO lw_sig_name_deli INDEX 1.
+  ENDIF.
+* << CHG-23: End Insert
+
+*----------------------------------------------------------------------*
+  cs_sig_name_deli = lw_sig_name_deli.
+*----------------------------------------------------------------------*
+
+ENDFORM.
+
+*----------------------------------------------------------------------*
+FORM pf_get_header_add TABLES pr_ebeln TYPE STANDARD TABLE.
+
+  DATA: lr_ebeln TYPE RANGE OF ekko-ebeln,
+        ls_ebeln LIKE LINE OF lr_ebeln.
+
+  DATA: lt_header1 LIKE TABLE OF gt_header,   " knttp <> blank
+        lt_header2 LIKE TABLE OF gt_header.   " knttp =  blank
+
+*----------------------------------------------------------------------*
+  lr_ebeln[] = pr_ebeln[].
+*----------------------------------------------------------------------*
+
+  SELECT    a~ebeln
+            bsart
+            ekorg
+            ekgrp
+
+            b~fistl   " fund center
+            b~geber   " fund
+
+            lifnr
+            a~aedat
+            ihrez
+            a~adrnr
+            verkf
+            telf1
+            frgke
+            knumv
+            unsez
+            frgzu
+            zmmapp_vorna
+            zmmapp_nach2
+            zmmapp_stext
+            zmmacto_vorna
+            zmmacto_nach2
+            zmmacto_stext
+            zzmm_no_esign
+            zzmm_j_1tpbupl
+            werks
+
+            c~knttp AS knttp                    "INS-INC0007082
+
+    INTO TABLE lt_header1
+       FROM ekko AS a INNER JOIN ekkn AS b ON a~ebeln = b~ebeln
+                                          AND b~loekz = ''
+                      INNER JOIN ekpo AS c ON a~ebeln = c~ebeln
+                                          AND c~loekz = ''
+      WHERE a~ebeln IN lr_ebeln.
+
+
+*----------------------------------------------------------------------*
+  SELECT    a~ebeln
+            bsart
+            ekorg
+            ekgrp
+
+            c~fistl   " fund center
+            c~geber   " fund
+
+            lifnr
+            a~aedat
+            ihrez
+            a~adrnr
+            verkf
+            telf1
+            frgke
+            knumv
+            unsez
+            frgzu
+            zmmapp_vorna
+            zmmapp_nach2
+            zmmapp_stext
+            zmmacto_vorna
+            zmmacto_nach2
+            zmmacto_stext
+            zzmm_no_esign
+            zzmm_j_1tpbupl
+            werks
+
+            c~knttp AS knttp                    "INS-INC0007082
+
+    INTO TABLE lt_header2
+       FROM ekko AS a INNER JOIN ekpo AS c ON a~ebeln = c~ebeln
+                                          AND c~loekz = ''
+      WHERE a~ebeln IN lr_ebeln.
+
+  IF lt_header1[] IS NOT INITIAL.
+    APPEND LINES OF lt_header1 TO gt_header.
+  ENDIF.
+
+  IF lt_header2[] IS NOT INITIAL.
+    APPEND LINES OF lt_header2 TO gt_header.
+  ENDIF.
+
+  DELETE gt_header WHERE fistl IS INITIAL OR geber IS INITIAL.  "<- INC0008051(+)
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_GET_DETAIL
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_get_detail .
+  DATA lv_tabix TYPE sy-tabix.                                  "CHG-06
+*--->Get detail data
+  CHECK NOT gt_header[] IS INITIAL.
+  SELECT  ebeln
+          ebelp
+          banfn
+          knttp
+          matnr
+          konnr
+          txz01
+          menge
+          meins
+          netwr
+          geber
+          fkber
+          fistl
+          mwskz
+    INTO CORRESPONDING FIELDS OF TABLE gt_detail
+    FROM ekpo
+    FOR ALL ENTRIES IN gt_header
+    WHERE ebeln = gt_header-ebeln
+  AND  loekz <> 'L'.
+
+  LOOP AT gt_header.                         "<<< CHG-05: Start Insert Add filed
+    lv_tabix = sy-tabix.                                        "CHG-06
+    READ TABLE gt_detail WITH KEY ebeln = gt_header-ebeln.
+* Start of insert: CHG-06
+    IF sy-subrc NE 0.
+      DELETE gt_header INDEX lv_tabix.
+      CONTINUE.
+    ENDIF.
+* End of insert: CHG-06
+    IF gt_header-bsart CP '5*'.
+
+      SELECT SINGLE banfn INTO gt_header-pr_id
+                          FROM ekpo
+                          WHERE ebeln EQ gt_detail-konnr
+      AND loekz NE 'X'.
+
+    ELSE.
+      gt_header-pr_id = gt_detail-banfn.
+    ENDIF.
+    MODIFY gt_header.
+  ENDLOOP.                                   ">>> CHG-05: End Insert Add filed
+
+ENDFORM.                    " PF_GET_DETAIL
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_CALCULATE_HEADER
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_calculate_header .
+  DATA: ls_detail  LIKE gt_detail,
+        l_amt      LIKE bseg-dmbtr,
+        lv_vat_sum LIKE bset-fwste,
+        l_wrbtr    LIKE bseg-wrbtr,
+        l_vat      LIKE bset-fwste,
+        l_zva2     LIKE bset-fwste,
+        l_v7       LIKE bset-fwste,
+        l_cnt      TYPE i.
+  DATA: lt_mwdat   TYPE TABLE OF  rtax1u15.
+
+*<<< BOI CHG-15
+  SELECT ebeln, knumv
+    INTO TABLE @DATA(lt_knumv)
+    FROM ekko
+    FOR ALL ENTRIES IN @gt_header
+    WHERE ebeln = @gt_header-ebeln.
+*>>> EOI CHG-15
+
+  SORT gt_detail.
+*--->Calculate line and summary
+  LOOP AT gt_detail.
+    MOVE gt_detail TO ls_detail.
+    AT NEW ebeln.
+      CLEAR: l_amt,
+             l_cnt,
+             l_vat,
+             l_zva2.                                                        "INS CHG-15
+    ENDAT.
+
+    ls_detail-netpr = ls_detail-netwr / ls_detail-menge.
+
+    l_amt = l_amt + ls_detail-netwr.
+    l_cnt = l_cnt + 1.
+    l_wrbtr = ls_detail-netwr.
+
+    IF ls_detail-mwskz IS NOT INITIAL.
+      CLEAR lv_vat_sum.
+      CALL FUNCTION 'CALCULATE_TAX_FROM_NET_AMOUNT'
+        EXPORTING
+          i_bukrs = '1000'
+          i_mwskz = ls_detail-mwskz
+*         I_TXJCD = ' '
+          i_waers = 'THB'
+          i_wrbtr = l_wrbtr
+*         I_ZBD1P = 0
+*         I_PRSDT =
+*         I_PROTOKOLL                =
+*         I_TAXPS =
+*         I_ACCNT_EXT                =
+*         I_ACCDATA                  =
+*         I_PRICING_REFRESH_TX       = ' '
+        IMPORTING
+*         E_FWNAV =
+*         E_FWNVV =
+          e_fwste = lv_vat_sum
+*         E_FWAST =
+        TABLES
+          t_mwdat = lt_mwdat.
+      IF sy-subrc = 0.
+        ADD  lv_vat_sum TO l_vat .
+        ADD  lv_vat_sum TO l_v7 .
+      ENDIF.
+
+    ELSE.
+
+      READ TABLE lt_knumv INTO DATA(lw_knumv) WITH KEY ebeln = ls_detail-ebeln.   "INS CHG-15
+
+      CLEAR: lv_vat_sum.
+      SELECT SINGLE kwert INTO lv_vat_sum
+                          FROM prcd_elements
+*                         WHERE knumv = gt_header-knumv                           "DEL CHG-15
+                         WHERE knumv = lw_knumv-knumv                             "INS CHG-15
+                           AND kposn = ls_detail-ebelp
+      AND kschl = 'ZVA2'.
+      IF sy-subrc = 0.
+        lv_vat_sum = lv_vat_sum * -1.
+        ADD  lv_vat_sum TO l_zva2.
+        ADD  lv_vat_sum TO l_vat.
+      ENDIF.
+      CLEAR: lw_knumv.                                                            "INS CHG-15
+    ENDIF.
+
+    AT END OF ebeln.
+      SORT gt_header BY ebeln . ">>CU_UPG_1809
+      LOOP AT gt_header
+        WHERE ebeln = ls_detail-ebeln.
+        gt_header-cnt = l_cnt.
+        gt_header-sum = l_amt.
+
+        gt_header-vat_sum =  l_vat .
+        gt_header-bef_sum =  l_amt - l_zva2.
+        gt_header-sum     =  gt_header-sum + l_v7.
+        MODIFY gt_header.
+      ENDLOOP.
+    ENDAT.
+
+    MODIFY gt_detail FROM ls_detail.
+  ENDLOOP.
+
+ENDFORM.                    " PF_CALCULATE_HEADER
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_FILLIN_TEXT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_text_item .
+  DATA: lt_line TYPE TABLE OF tline WITH HEADER LINE.
+  DATA: l_obj     TYPE thead-tdname,
+        ls_detail LIKE gt_detail,
+        l_index   LIKE sy-tabix,
+        l_seq     TYPE i.
+
+*--->Get item text from PO
+*  LOOP AT gt_detail.
+*    CLEAR l_seq.
+*    CONCATENATE gt_detail-ebeln gt_detail-ebelp
+*           INTO l_obj.
+*
+*    PERFORM pf_read_text TABLES lt_line
+*                         USING l_obj 'F03' 'EKPO' 'X'.
+*    IF NOT lt_line[] IS INITIAL.
+*      MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*      READ TABLE lt_line INDEX 1.
+*      MOVE lt_line-tdline TO gt_txt_item-text.
+*      l_seq = l_seq + 1.
+*      gt_txt_item-seq = l_seq.
+*      APPEND gt_txt_item.
+*    ENDIF.
+*data v_cnt type i.
+*    PERFORM pf_read_text TABLES lt_line
+*                         USING l_obj 'F01' 'EKPO' ' '.      "<<< CH-03
+*    IF NOT lt_line[] IS INITIAL.
+*      LOOP AT lt_line.
+*
+*        MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+**      READ TABLE lt_line INDEX 1.
+*
+*          v_cnt = v_cnt + 1.
+*          MOVE lt_line-tdline TO gt_txt_item-text.
+*          CONDENSE gt_txt_item-text.
+*          l_seq = l_seq + 1.
+*          gt_txt_item-seq = l_seq.
+*          APPEND gt_txt_item.
+*
+*      ENDLOOP.
+*    ENDIF.
+*
+*    PERFORM pf_read_text TABLES lt_line
+*                         USING l_obj 'F04' 'EKPO' ' '.
+*    IF NOT lt_line[] IS INITIAL.
+*      LOOP AT lt_line
+*        WHERE tdline <> ' '.
+*        MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*        MOVE lt_line-tdline TO gt_txt_item-text.
+*        l_seq = l_seq + 1.
+*        gt_txt_item-seq = l_seq.
+*        APPEND gt_txt_item.
+*      ENDLOOP.
+*    ENDIF.
+*
+**--->Update last seq item
+*    gt_detail-last = l_seq.
+*    MODIFY gt_detail.
+*  ENDLOOP.
+  LOOP AT gt_detail
+    WHERE menge <> 0.
+    CLEAR l_seq.
+    l_seq = 1.
+    l_index = sy-tabix.
+    CONCATENATE gt_detail-ebeln gt_detail-ebelp
+           INTO l_obj.
+
+    MOVE: gt_detail-ebeln TO ls_detail-ebeln,
+          gt_detail-ebelp TO ls_detail-ebelp.
+
+    CLEAR lt_line[].
+    REFRESH lt_line.
+    v_fieldcount = 1.
+    CLEAR ls_detail.
+
+
+
+    PERFORM pf_read_text TABLES lt_line
+                         USING l_obj 'F03' 'EKPO' 'X'.
+*    DELETE lt_line WHERE tdline = space.                         "CHG-06
+    LOOP AT lt_line INTO wa_line.
+*        WHERE tdline <> ' '.                                     "CHG-06
+      REPLACE ALL OCCURRENCES OF '<(>&<)>' IN wa_line-tdline WITH '&'.
+      IF wa_line-tdformat = '*'.
+*        IF ls_detail-txz01 NE space.                             "CHG-06
+        IF ls_detail-ebeln IS NOT INITIAL.                        "CHG-06
+          APPEND ls_detail TO gt_detail.
+        ENDIF.
+        CLEAR ls_detail.
+*          MOVE: gt_detail-banfn TO ls_detail-banfn,
+*          gt_detail-bnfpo TO ls_detail-bnfpo.
+        MOVE: gt_detail-ebeln TO ls_detail-ebeln,
+        gt_detail-ebelp TO ls_detail-ebelp.
+        v_fieldcount = 1.
+        l_seq = l_seq + 1.
+        ls_detail-seq = l_seq.
+      ENDIF.
+
+      CASE v_fieldcount.
+        WHEN 1.
+          MOVE wa_line-tdline TO ls_detail-txz01.
+        WHEN 2.
+          MOVE wa_line-tdline TO ls_detail-txz02.
+        WHEN 3.
+          MOVE wa_line-tdline TO ls_detail-txz03.
+        WHEN 4.
+          MOVE wa_line-tdline TO ls_detail-txz04.
+        WHEN 5.
+          MOVE wa_line-tdline TO ls_detail-txz05.
+        WHEN 6.
+          MOVE wa_line-tdline TO ls_detail-txz06.
+        WHEN 7.
+          MOVE wa_line-tdline TO ls_detail-txz07.
+        WHEN 8.
+          MOVE wa_line-tdline TO ls_detail-txz08.
+
+      ENDCASE.
+
+      v_fieldcount = v_fieldcount + 1.
+      AT LAST.
+        APPEND ls_detail TO gt_detail.
+        CLEAR ls_detail.
+        MOVE: gt_detail-ebeln TO ls_detail-ebeln,
+        gt_detail-ebelp TO ls_detail-ebelp.
+*            MOVE: gt_detail-banfn TO ls_detail-banfn,
+*          gt_detail-bnfpo TO ls_detail-bnfpo.
+        v_fieldcount = 1.
+        l_seq = l_seq + 1.
+        ls_detail-seq = l_seq.
+      ENDAT.
+
+
+    ENDLOOP.
+
+
+    CLEAR lt_line.
+    REFRESH lt_line.
+    v_fieldcount = 1.
+    CLEAR ls_detail.
+
+    PERFORM pf_read_text TABLES lt_line
+                        USING l_obj 'F01' 'EKPO' ' '.
+*    DELETE lt_line WHERE tdline = space.                         "CHG-06
+    LOOP AT lt_line INTO wa_line.
+*        WHERE tdline <> ' '.                                     "CHG-06
+
+      IF wa_line-tdformat = '*'.
+        REPLACE ALL OCCURRENCES OF '<(>&<)>' IN wa_line-tdline WITH '&'.
+*        IF ls_detail-txz01 NE space.                             "CHG-06
+        IF ls_detail-ebeln IS NOT INITIAL.                        "CHG-06
+          APPEND ls_detail TO gt_detail.
+        ENDIF.
+        CLEAR ls_detail.
+*          MOVE: gt_detail-banfn TO ls_detail-banfn,
+*          gt_detail-bnfpo TO ls_detail-bnfpo.
+        MOVE: gt_detail-ebeln TO ls_detail-ebeln,
+       gt_detail-ebelp TO ls_detail-ebelp.
+        v_fieldcount = 1.
+        l_seq = l_seq + 1.
+        ls_detail-seq = l_seq.
+      ENDIF.
+
+      CASE v_fieldcount.
+        WHEN 1.
+          MOVE wa_line-tdline TO ls_detail-txz01.
+        WHEN 2.
+          MOVE wa_line-tdline TO ls_detail-txz02.
+        WHEN 3.
+          MOVE wa_line-tdline TO ls_detail-txz03.
+        WHEN 4.
+          MOVE wa_line-tdline TO ls_detail-txz04.
+        WHEN 5.
+          MOVE wa_line-tdline TO ls_detail-txz05.
+        WHEN 6.
+          MOVE wa_line-tdline TO ls_detail-txz06.
+        WHEN 7.
+          MOVE wa_line-tdline TO ls_detail-txz07.
+        WHEN 8.
+          MOVE wa_line-tdline TO ls_detail-txz08.
+
+      ENDCASE.
+
+      v_fieldcount = v_fieldcount + 1.
+      AT LAST.
+        APPEND ls_detail TO gt_detail.
+        CLEAR ls_detail.
+        MOVE: gt_detail-ebeln TO ls_detail-ebeln,
+        gt_detail-ebelp TO ls_detail-ebelp.
+*            MOVE: gt_detail-banfn TO ls_detail-banfn,
+*          gt_detail-bnfpo TO ls_detail-bnfpo.
+        v_fieldcount = 1.
+        l_seq = l_seq + 1.
+        ls_detail-seq = l_seq.
+      ENDAT.
+
+
+    ENDLOOP.
+
+
+    CLEAR lt_line.
+    REFRESH lt_line.
+    v_fieldcount = 1.
+    CLEAR ls_detail.
+
+    PERFORM pf_read_text TABLES lt_line
+                     USING l_obj 'F04' 'EKPO' ' '.
+*        delete lt_line where TDLINE = space.
+    LOOP AT lt_line INTO wa_line.
+*        WHERE tdline <> ' '.
+
+      IF wa_line-tdformat = '*'.
+        REPLACE ALL OCCURRENCES OF '<(>&<)>' IN wa_line-tdline WITH '&'.
+*        if ls_detail-txz01 ne space.
+        IF ls_detail-ebeln IS NOT INITIAL.                        "CHG-06
+          APPEND ls_detail TO gt_detail.
+        ENDIF.                                                    "CHG-06
+*        endif.
+        CLEAR ls_detail.
+*          MOVE: gt_detail-banfn TO ls_detail-banfn,
+*          gt_detail-bnfpo TO ls_detail-bnfpo.
+        MOVE: gt_detail-ebeln TO ls_detail-ebeln,
+       gt_detail-ebelp TO ls_detail-ebelp.
+        v_fieldcount = 1.
+        l_seq = l_seq + 1.
+        ls_detail-seq = l_seq.
+      ENDIF.
+
+
+      CASE v_fieldcount.
+        WHEN 1.
+          MOVE wa_line-tdline TO ls_detail-txz01.
+        WHEN 2.
+          MOVE wa_line-tdline TO ls_detail-txz02.
+        WHEN 3.
+          MOVE wa_line-tdline TO ls_detail-txz03.
+        WHEN 4.
+          MOVE wa_line-tdline TO ls_detail-txz04.
+        WHEN 5.
+          MOVE wa_line-tdline TO ls_detail-txz05.
+        WHEN 6.
+          MOVE wa_line-tdline TO ls_detail-txz06.
+        WHEN 7.
+          MOVE wa_line-tdline TO ls_detail-txz07.
+        WHEN 8.
+          MOVE wa_line-tdline TO ls_detail-txz08.
+
+      ENDCASE.
+
+      v_fieldcount = v_fieldcount + 1.
+      AT LAST.
+        APPEND ls_detail TO gt_detail.
+        CLEAR ls_detail.
+*            MOVE: gt_detail-banfn TO ls_detail-banfn,
+*          gt_detail-bnfpo TO ls_detail-bnfpo.
+        MOVE: gt_detail-ebeln TO ls_detail-ebeln,
+     gt_detail-ebelp TO ls_detail-ebelp.
+        v_fieldcount = 1.
+        l_seq = l_seq + 1.
+        ls_detail-seq = l_seq.
+*       gt_detail-last = l_seq.
+      ENDAT.
+    ENDLOOP.
+*   MODIFY gt_detail INDEX l_index.
+  ENDLOOP.
+  SORT gt_detail BY ebeln ebelp seq.
+ENDFORM.                    " PF_FILLIN_TEXT
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_READ_TEXT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_read_text TABLES it_line STRUCTURE tline
+                  USING VALUE(us_obj) TYPE c "Obj name
+                        VALUE(us_typ) TYPE c "Type obj
+                        VALUE(us_tab) TYPE c "Table name
+                        VALUE(us_oln) TYPE c.               "X = 1 line
+  DATA: lt_line TYPE TABLE OF tline WITH HEADER LINE.
+
+  FREE it_line.
+*--->Check exist item text
+  SELECT SINGLE * FROM stxh
+   WHERE tdobject = us_tab
+     AND tdname   = us_obj
+     AND tdid     = us_typ
+  AND tdspras  = sy-langu.
+
+  IF sy-subrc = 0.
+    FREE lt_line.
+    CALL FUNCTION 'READ_TEXT'
+      EXPORTING
+        id       = us_typ
+        language = sy-langu
+        name     = us_obj
+        object   = us_tab
+      TABLES
+        lines    = lt_line.
+    IF NOT lt_line[] IS INITIAL.
+      IF us_oln = 'X'.
+        APPEND LINES OF lt_line FROM 1 TO 1 TO it_line.
+      ELSE.
+        it_line[] = lt_line[].
+      ENDIF.
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " PF_READ_TEXT
+
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_TEXT_head
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_text_head .
+  DATA: lt_line TYPE TABLE OF tline WITH HEADER LINE.
+  DATA: l_obj TYPE thead-tdname,
+        l_seq TYPE i.
+*  DATA: lv_line(1) TYPE c,                                       "CHG-06
+  DATA: lv_line           TYPE i,                                           "CHG-06
+        lv_txt_name(60)   TYPE c,
+        lv_txt_name_2(60) TYPE c.
+  DATA: lv_f28 LIKE tline-tdline,
+        lv_f29 LIKE tline-tdline,
+        lv_f55 LIKE tline-tdline.
+  LOOP AT gt_header.
+
+    MOVE gt_header-ebeln TO l_obj.
+    CLEAR l_seq.
+    CLEAR: lv_f28, lv_f29.                                "CHG-12: Insert
+*--->Get text header
+    PERFORM pf_read_text TABLES lt_line
+                         USING l_obj 'F23' 'EKKO' 'X'.
+    IF NOT lt_line[] IS INITIAL.
+      READ TABLE lt_line INDEX 1.
+      gt_header-txt1 = lt_line-tdline.
+    ENDIF.
+
+*--->
+    PERFORM pf_read_text TABLES lt_line
+                         USING l_obj 'F55' 'EKKO' 'X'.
+    IF NOT lt_line[] IS INITIAL.
+      READ TABLE lt_line INDEX 1.
+      gt_header-txt55 = lt_line-tdline.
+    ENDIF.
+
+*--->
+    PERFORM pf_read_text TABLES lt_line
+                         USING l_obj 'F21' 'EKKO' 'X'.
+    IF NOT lt_line[] IS INITIAL.
+      READ TABLE lt_line INDEX 1.
+      gt_header-txt83 = lt_line-tdline.
+    ENDIF.
+
+*    PERFORM pf_read_text TABLES lt_line
+*                         USING l_obj 'F24' 'EKKO' ''.
+*    DESCRIBE TABLE lt_line LINES lv_line.  ">>>change v1 by kanittha 12/11/2007 get data 2 line
+*    IF NOT lt_line[] IS INITIAL.
+*      IF lv_line = 1.
+*        READ TABLE  lt_line INDEX 1.
+*        lv_txt_name = lt_line-tdline.
+*        CONCATENATE '('  lv_txt_name  ')' INTO  gt_header-txt2.
+*      ELSEIF lv_line = 2.
+*        LOOP AT lt_line.
+*          IF sy-tabix EQ 1.
+*            lv_txt_name = lt_line-tdline.
+*            CONCATENATE '('  lv_txt_name INTO  gt_header-txt2.
+*          ELSEIF sy-tabix EQ 2.
+*            lv_txt_name_2 = lt_line-tdline.
+*            CONCATENATE  lv_txt_name_2  ')' INTO  gt_header-txt2_2.
+*          ENDIF.
+*        ENDLOOP.
+*      ENDIF.
+*    ENDIF.
+****ตำแหน่ง
+*    PERFORM pf_read_text TABLES lt_line
+*                         USING l_obj 'F25' 'EKKO' ''.
+*
+*    IF NOT lt_line[] IS INITIAL.
+*      LOOP AT lt_line . ">>>change v1 by kanittha 12/11/2007 get data 2 line
+*        IF sy-tabix EQ 1.
+*          gt_header-txt3 = lt_line-tdline.
+*        ELSEIF sy-tabix EQ 2.
+*          gt_header-txt3_2 = lt_line-tdline.
+*        ENDIF.
+*      ENDLOOP.
+*    ENDIF.
+
+
+    PERFORM pf_read_text TABLES lt_line
+*                         USING l_obj 'F21' 'EKKO' 'X'.         "DEL CHG-15
+                         USING l_obj 'F83' 'EKKO' 'X'.          "INS CHG-15
+    IF NOT lt_line[] IS INITIAL.
+      READ TABLE lt_line INDEX 1.
+      gt_header-txt4 = lt_line-tdline.
+    ENDIF.
+
+    PERFORM pf_read_text TABLES lt_line
+                         USING l_obj 'F17' 'EKKO' 'X'.
+    IF NOT lt_line[] IS INITIAL.
+      READ TABLE lt_line INDEX 1.
+      gt_header-txt5 = lt_line-tdline.
+      gt_header-pr_b09 = lt_line-tdline. " CHG-07 : insert
+    ENDIF.
+
+    PERFORM pf_read_text TABLES lt_line
+                         USING l_obj 'F22' 'EKKO' 'X'.
+    IF NOT lt_line[] IS INITIAL.
+      READ TABLE lt_line INDEX 1.
+      gt_header-po_f22 = lt_line-tdline.
+    ENDIF.
+*    PERFORM pf_read_text TABLES lt_line
+*                         USING l_obj 'F18' 'EKKO' 'X'.
+*    IF NOT lt_line[] IS INITIAL.
+*      READ TABLE lt_line INDEX 1.
+*      gt_header-po_f18 = lt_line-tdline.
+*    ENDIF.
+    IF gt_header-ihrez NE space AND gt_header-po_f22 NE space.
+      CONCATENATE 'เลขที่' gt_header-ihrez INTO gt_header-ihrezf22
+                  SEPARATED BY space.
+      CONCATENATE gt_header-ihrezf22 gt_header-po_f22 INTO gt_header-ihrezf22.
+*      CONDENSE gt_header-ihrezf22.
+    ELSEIF gt_header-ihrez = space AND  gt_header-po_f22  NE space.
+      CONCATENATE 'เลขที่' gt_header-po_f22 INTO gt_header-ihrezf22
+                  SEPARATED BY space.
+    ELSEIF gt_header-ihrez = space.
+      gt_header-ihrezf22 = gt_header-po_f22.
+      CONDENSE gt_header-ihrezf22.
+    ELSEIF gt_header-po_f22  = space.
+      CONCATENATE 'เลขที่' gt_header-ihrez INTO gt_header-ihrezf22
+                  SEPARATED BY space.
+*      gt_header-ihrezf22 = gt_header-ihrez.
+*      CONDENSE gt_header-ihrezf22.
+    ENDIF.
+    PERFORM pf_read_text TABLES lt_line
+                         USING l_obj 'F28' 'EKKO' 'X'.
+    IF NOT lt_line[] IS INITIAL.
+      READ TABLE lt_line INDEX 1.
+      lv_f28 = lt_line-tdline.
+    ENDIF.
+
+    IF lv_f28 IS INITIAL.
+      PERFORM pf_read_text TABLES lt_line
+                           USING l_obj 'F29' 'EKKO' 'X'.
+      IF NOT lt_line[] IS INITIAL.
+        READ TABLE lt_line INDEX 1.
+        lv_f29 = lt_line-tdline.
+      ENDIF.
+      IF lv_f29 IS INITIAL.
+        MOVE ''   TO gt_header-txt6.
+      ELSE.
+        CONCATENATE 'รักษาการแทน'  lv_f29 INTO gt_header-txt6 SEPARATED BY space. "<<<CH04: Art
+      ENDIF.
+    ELSE.
+      CONCATENATE 'ปฏิบัติการแทน' lv_f28 INTO gt_header-txt6 SEPARATED BY space. "<<<CH04: Art
+    ENDIF.
+
+*--->Get text header for footer report
+    PERFORM pf_read_text TABLES lt_line
+                          USING l_obj 'F27' 'EKKO' ' '.
+    IF NOT lt_line[] IS INITIAL.
+      LOOP AT lt_line
+        WHERE tdline <> ' '.
+        MOVE gt_header-ebeln TO gt_txt_head-ebeln.
+        MOVE lt_line-tdline TO gt_txt_head-text.
+        l_seq = l_seq + 1.
+        gt_txt_head-seq = l_seq.
+        APPEND gt_txt_head.
+      ENDLOOP.
+    ENDIF.
+
+* Start of comment: CHG-06
+*--->Edit header table
+*---> Begin Get text header for delivery place
+*    PERFORM pf_read_text TABLES lt_line
+*                          USING l_obj 'F63' 'EKKO' 'X'.
+*    IF NOT lt_line[] IS INITIAL.
+*      READ TABLE lt_line INDEX 1.
+*      gt_header-addr = lt_line-tdline.
+*    ENDIF.
+*---> end Get text header for delivery place
+* End of comment: CHG-06
+    MODIFY gt_header.
+  ENDLOOP.
+
+ENDFORM.                    " PF_TEXT_head
+
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_GET_ACCASS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_get_accass .
+  DATA: lt_fmfint  TYPE TABLE OF fmfint WITH HEADER LINE,
+        lt_tfkbt   TYPE TABLE OF tfkbt WITH HEADER LINE,
+        lt_fmfctrt TYPE TABLE OF fmfctrt WITH HEADER LINE.
+  DATA: l_p1   TYPE setnode-setname,
+        l_des1 TYPE setheadert-descript,
+        l_p2   TYPE setnode-setname,
+        l_des2 TYPE setheadert-descript.
+
+*--->Get account assignment
+  SELECT ebeln
+         ebelp
+         sakto
+         kostl
+         geber
+         gsber
+         fkber
+         fistl
+  FROM ekkn
+    INTO CORRESPONDING FIELDS OF TABLE gt_accass
+    FOR ALL ENTRIES IN gt_detail
+  WHERE ebeln = gt_detail-ebeln
+  AND ebelp = gt_detail-ebelp.
+
+  IF NOT gt_accass[] IS INITIAL.
+*--->Get description
+    SELECT *
+      FROM fmfint
+      INTO TABLE lt_fmfint
+      FOR ALL ENTRIES IN gt_accass
+      WHERE spras = sy-langu
+    AND  fincode = gt_accass-geber.
+
+    SELECT *
+      FROM tfkbt
+      INTO TABLE lt_tfkbt
+      FOR ALL ENTRIES IN gt_accass
+      WHERE spras = sy-langu
+    AND  fkber = gt_accass-fkber.
+
+    SELECT *
+      FROM fmfctrt
+      INTO TABLE lt_fmfctrt
+      FOR ALL ENTRIES IN gt_accass
+      WHERE spras = sy-langu
+    AND  fictr = gt_accass-fistl.
+
+    LOOP AT gt_accass.
+      READ TABLE lt_fmfint WITH KEY fincode = gt_accass-geber.
+      gt_accass-ge_des = lt_fmfint-beschr.
+
+      READ TABLE lt_tfkbt WITH KEY fkber = gt_accass-fkber.
+      gt_accass-fk_des = lt_tfkbt-fkbtx.
+
+      READ TABLE lt_fmfctrt WITH KEY fictr = gt_accass-fistl.
+      gt_accass-fi_des = lt_fmfctrt-beschr.
+
+*--->แผนหลัก และแผนงาน
+      CLEAR: l_p1, l_des1, l_p2, l_des2.
+      CALL FUNCTION 'ZMM_FA_DESCRIPTION'
+        EXPORTING
+          key       = gt_accass-fkber
+        IMPORTING
+          p1        = l_p1
+          des1      = l_des1
+          p2        = l_p2
+          des2      = l_des2
+        EXCEPTIONS
+          not_found = 1
+          OTHERS    = 2.
+      IF sy-subrc = 0.
+        gt_accass-plan1 = l_p1.
+        gt_accass-p1_des = l_des1.
+        gt_accass-plan2 = l_p2.
+        gt_accass-p2_des = l_des2.
+      ENDIF.
+
+      MODIFY gt_accass.
+    ENDLOOP.
+  ENDIF.
+
+*--->Fill in description account assignment case data in EKPO
+  READ TABLE gt_detail WITH KEY knttp = ' '.
+  CHECK sy-subrc = 0.
+*--->Get description
+  SELECT *
+    FROM fmfint
+    INTO TABLE lt_fmfint
+    FOR ALL ENTRIES IN gt_detail
+    WHERE spras = sy-langu
+  AND  fincode = gt_detail-geber.
+
+  SELECT *
+    FROM tfkbt
+    INTO TABLE lt_tfkbt
+    FOR ALL ENTRIES IN gt_detail
+    WHERE spras = sy-langu
+  AND  fkber = gt_detail-fkber.
+
+  SELECT *
+    FROM fmfctrt
+    INTO TABLE lt_fmfctrt
+    FOR ALL ENTRIES IN gt_detail
+    WHERE spras = sy-langu
+  AND  fictr = gt_detail-fistl.
+
+  LOOP AT gt_detail
+   WHERE knttp = ' '.
+    CLEAR gt_accass.
+    MOVE: gt_detail-ebeln TO gt_accass-ebeln,
+          gt_detail-ebelp TO gt_accass-ebelp,
+          gt_detail-geber TO gt_accass-geber,
+          gt_detail-fkber TO gt_accass-fkber,
+          gt_detail-fistl TO gt_accass-fistl.
+
+    READ TABLE lt_fmfint WITH KEY fincode = gt_accass-geber.
+    gt_accass-ge_des = lt_fmfint-beschr.
+
+    READ TABLE lt_tfkbt WITH KEY fkber = gt_accass-fkber.
+    gt_accass-fk_des = lt_tfkbt-fkbtx.
+
+    READ TABLE lt_fmfctrt WITH KEY fictr = gt_accass-fistl.
+    gt_accass-fi_des = lt_fmfctrt-beschr.
+
+*--->แผนหลัก และแผนงาน
+    CLEAR: l_p1, l_des1, l_p2, l_des2.
+    CALL FUNCTION 'ZMM_FA_DESCRIPTION'
+      EXPORTING
+        key       = gt_accass-fkber
+      IMPORTING
+        p1        = l_p1
+        des1      = l_des1
+        p2        = l_p2
+        des2      = l_des2
+      EXCEPTIONS
+        not_found = 1
+        OTHERS    = 2.
+    IF sy-subrc = 0.
+      gt_accass-plan1 = l_p1.
+      gt_accass-p1_des = l_des1.
+      gt_accass-plan2 = l_p2.
+      gt_accass-p2_des = l_des2.
+    ENDIF.
+
+    APPEND gt_accass.
+  ENDLOOP.
+
+*Sort data
+  SORT gt_accass BY ebeln ebelp.
+
+ENDFORM.                    " PF_GET_ACCASS
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_CHK_DIFF_FUND
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_chk_diff_fund_pr .
+  DATA: lt_detail LIKE gt_detail OCCURS 0 WITH HEADER LINE.
+  DATA: l_chk(42),
+        l_cur(42),
+        l_pre(42),
+  l_index TYPE i.
+
+*--->Check diferance account assignment
+  LOOP AT gt_header.
+    CLEAR l_index.
+
+    LOOP AT gt_accass
+      WHERE ebeln = gt_header-ebeln.
+
+      l_index = l_index + 1.
+      CONCATENATE gt_accass-geber
+                  gt_accass-fkber
+                  gt_accass-fistl
+               INTO l_chk.
+*--->Check differance fund
+      IF l_index = 1.
+        l_pre = l_chk.
+        l_cur = l_chk.
+      ELSE.
+        l_pre = l_cur.
+        l_cur = l_chk.
+      ENDIF.
+      IF l_pre <> l_cur.
+        gt_header-no_hd = 'X'.
+        MODIFY gt_header.
+        EXIT.
+      ENDIF.
+    ENDLOOP.
+
+  ENDLOOP.
+
+*--->Check diferance PR number
+  lt_detail[] = gt_detail[].
+  SORT lt_detail BY ebeln banfn.
+
+  LOOP AT gt_header.
+    CLEAR l_index.
+
+    LOOP AT lt_detail
+      WHERE ebeln = gt_header-ebeln.
+
+      l_index = l_index + 1.
+      l_chk = lt_detail-banfn.
+
+*--->Check differance fund
+      IF l_index = 1.
+        l_pre = l_chk.
+        l_cur = l_chk.
+      ELSE.
+        l_pre = l_cur.
+        l_cur = l_chk.
+      ENDIF.
+      IF l_pre <> l_cur.
+        gt_header-no_pr = 'X'.
+        MODIFY gt_header.
+        EXIT.
+      ENDIF.
+    ENDLOOP.
+
+  ENDLOOP.
+ENDFORM.                    " PF_CHK_DIFF_FUND
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_GET_PR_ITEM
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_get_pr_item .
+  DATA: lt_line TYPE TABLE OF tline WITH HEADER LINE.
+  DATA: l_obj TYPE thead-tdname,
+        l_seq TYPE i.
+  DATA: BEGIN OF lt_pr OCCURS 0,
+          banfn LIKE eban-banfn,
+          bnfpo LIKE eban-bnfpo,
+        END OF lt_pr.
+
+*--->Get first line active from PR
+  LOOP AT gt_header.
+
+    LOOP AT gt_detail
+      WHERE ebeln = gt_header-ebeln.
+      l_seq = gt_detail-last.
+
+      SELECT MAX( banfn )
+             MIN( bnfpo )
+        INTO TABLE  lt_pr
+        FROM eban
+       WHERE banfn = gt_detail-banfn
+      AND loekz <> 'X'.
+      DELETE lt_pr WHERE banfn IS INITIAL AND bnfpo IS INITIAL.
+
+      IF NOT lt_pr[] IS INITIAL.
+*--->Get text first line active from PR
+        LOOP AT lt_pr.
+          CONCATENATE lt_pr-banfn lt_pr-bnfpo
+                     INTO l_obj.
+* Begin of delete CHG-02
+*          CASE  gt_header-type .
+*            WHEN 'X'. "รายงานจากงบประมาณ
+*              PERFORM pf_read_text TABLES lt_line
+*                                   USING l_obj 'B04' 'EBAN' 'X'.
+*              IF NOT lt_line[] IS INITIAL.
+*                MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*                READ TABLE lt_line INDEX 1.
+*                MOVE lt_line-tdline TO gt_txt_item-text.
+*                l_seq = l_seq + 1.
+*                gt_txt_item-seq = l_seq.
+*                APPEND gt_txt_item.
+*              ENDIF.
+*
+*              PERFORM pf_read_text TABLES lt_line
+*                                   USING l_obj 'B01' 'EBAN' 'X'.
+*              IF NOT lt_line[] IS INITIAL.
+*                MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*                READ TABLE lt_line INDEX 1.
+*                MOVE lt_line-tdline TO gt_txt_item-text.
+*                l_seq = l_seq + 1.
+*                gt_txt_item-seq = l_seq.
+*                APPEND gt_txt_item.
+*              ENDIF.
+*
+*              PERFORM pf_read_text TABLES lt_line
+*                                   USING l_obj 'B03' 'EBAN' 'X'.
+*              IF NOT lt_line[] IS INITIAL.
+*                MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*                READ TABLE lt_line INDEX 1.
+*                MOVE lt_line-tdline TO gt_txt_item-text.
+*                l_seq = l_seq + 1.
+*                gt_txt_item-seq = l_seq.
+*                APPEND gt_txt_item.
+*              ENDIF.
+*
+*            WHEN ' '. "รายงานจากจุฬา
+*
+**--           If PR number isn't assigned to header that means this PO
+**             refere to multiple PRs. With this case PR number will be
+**             displayed at line item level.
+*              IF gt_header-pr_b5 IS INITIAL.      "<<< CHG-01:INSERT
+*                PERFORM pf_read_text TABLES lt_line
+*                                     USING l_obj 'B05' 'EBAN' 'X'.
+*                IF NOT lt_line[] IS INITIAL.
+*                  MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*                  READ TABLE lt_line INDEX 1.
+*                  CONCATENATE 'อ้างถึงใบขอซื้อขอจ้างเลขที่  '
+*                     lt_line-tdline INTO gt_txt_item-text.
+*                  l_seq = l_seq + 1.
+*                  gt_txt_item-seq = l_seq.
+*                  APPEND gt_txt_item.
+*                ENDIF.
+*
+*                PERFORM pf_read_text TABLES lt_line
+*                                         USING l_obj 'B06' 'EBAN' 'X'.
+*                IF NOT lt_line[] IS INITIAL.
+*                  MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*                  READ TABLE lt_line INDEX 1.
+*                  PERFORM pf_chg_to_ldate USING lt_line-tdline
+*                                                gt_txt_item-text.
+*                  l_seq = l_seq + 1.
+*                  gt_txt_item-seq = l_seq.
+*                  APPEND gt_txt_item.
+*                ENDIF.                              "<<< CHG-01:INSERT
+*              ENDIF.
+**          ENDCASE.
+* End of delete CHG-02
+* Begin of insert CHG-02
+*<<< BOD CHG-15
+*          IF gt_header-pr_b5 IS INITIAL.      "<<< CHG-01:INSERT
+*            PERFORM pf_read_text TABLES lt_line
+*                                 USING l_obj 'B05' 'EBAN' 'X'.
+*            IF NOT lt_line[] IS INITIAL.
+*              MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*              READ TABLE lt_line INDEX 1.
+*              CONCATENATE 'อ้างถึงใบขอซื้อขอจ้างเลขที่  '
+*                 lt_line-tdline INTO gt_txt_item-text.
+*              l_seq = l_seq + 1.
+*              gt_txt_item-seq = l_seq.
+*              APPEND gt_txt_item.
+*            ENDIF.
+*
+*            PERFORM pf_read_text TABLES lt_line
+*                                     USING l_obj 'B06' 'EBAN' 'X'.
+*            IF NOT lt_line[] IS INITIAL.
+*              MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*              READ TABLE lt_line INDEX 1.
+*              PERFORM pf_chg_to_ldate USING lt_line-tdline
+*                                            gt_txt_item-text.
+*              l_seq = l_seq + 1.
+*              gt_txt_item-seq = l_seq.
+*              APPEND gt_txt_item.
+*            ENDIF.                              "<<< CHG-01:INSERT
+*          ENDIF.
+*>>> EOD CHG-15
+*          ENDCASE.
+* End of insert CHG-02
+        ENDLOOP.
+      ENDIF.
+
+*--->Update last record
+      gt_detail-last = l_seq.
+      MODIFY gt_detail.
+
+    ENDLOOP.
+  ENDLOOP.
+
+*--->Sort data
+  SORT gt_txt_item BY ebeln ebelp seq.
+
+ENDFORM.                    " PF_GET_PR_ITEM
+
+*&---------------------------------------------------------------------*
+*&      Form  pf_set_header
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_set_header .
+*--->Set subject header
+  IF wa_screen NE space.
+*>>CU_UPG_1809
+    SELECT * UP TO 1 ROWS
+      FROM ekpo
+     WHERE ebeln = nast-objky
+     ORDER BY ebeln .
+
+*    SELECT SINGLE * FROM ekpo
+*     WHERE ebeln = nast-objky.
+*    IF sy-subrc = 0.
+      CASE ekpo-matkl+0(3).
+        WHEN '002'.
+          g_subj  = 'ใบสั่งจ้าง'.
+          g_txt   = 'ผู้รับจ้าง'.
+          g_txt2  = 'ผู้สั่งจ้าง'.
+          g_page = 3.
+        WHEN OTHERS.
+          g_subj = 'ใบสั่งซื้อ'.
+          g_txt  = 'ผู้ขาย'.
+          g_txt2  = 'ผู้สั่งซื้อ'.
+          g_page = 2.
+
+      ENDCASE.
+*    ENDIF.
+    ENDSELECT.
+  ELSE.
+    CASE 'X'.
+      WHEN r1.
+        g_subj = 'ใบสั่งซื้อ'.
+        g_txt  = 'ผู้ขาย'.
+        g_txt2  = 'ผู้สั่งซื้อ'.
+        g_page = 2.
+      WHEN r2.
+        g_subj = 'ใบสั่งจ้าง'.
+        g_txt  = 'ผู้รับจ้าง'.
+        g_txt2  = 'ผู้สั่งจ้าง'.
+        g_page = 3.
+    ENDCASE.
+  ENDIF.
+
+ENDFORM.                    " pf_set_header
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_PRINT_DOC
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_print_doc .
+  DATA: func_mod_name1 TYPE rs38l_fnam,
+        func_mod_name2 TYPE rs38l_fnam,
+        f_name         TYPE tdsfname.
+  DATA: ssfctrlop LIKE ssfctrlop.
+  DATA: l_name1 TYPE string,
+        l_posi1 TYPE string.
+
+*<<< START INS FIORI-01 >>>
+  DATA: ssfcrescl TYPE ssfcrescl,
+        ssfcresop TYPE ssfcresop,
+        ssfcompop TYPE ssfcompop.
+  DATA: lt_tstotf      TYPE tsfotf,
+        lv_pdf_len     TYPE i,
+        lv_pdf_xstring TYPE xstring,
+        lt_lines       TYPE TABLE OF tline.
+*>>> END INS FIORI-01 <<<
+
+  DATA: lw_attach    TYPE zsba_attachment,
+        lt_return    TYPE bapiret2_t,
+        lv_arc_id    TYPE saearchivi,
+        lv_arc_docid TYPE saeardoid,
+        lv_file_size TYPE so_doc_siz.
+*--->Get Function Mode Name in System
+  f_name = 'ZLPUFM03_1_FORM_S4'.
+  CALL FUNCTION 'SSF_FUNCTION_MODULE_NAME'
+    EXPORTING
+      formname = f_name
+    IMPORTING
+      fm_name  = func_mod_name1.
+
+  ssfcompop-tddest = 'LOCL'.                          "INS CHG-15
+  ssfcompop-tdimmed = 'X'.                            "INS CHG-15
+  IF gv_attach = 'X' OR p_prform IS NOT INITIAL.      "INS CHG-15
+    ssfctrlop-no_dialog = 'X'.                        "INS CHG-15
+    ssfctrlop-getotf    = 'X'.                        "INS CHG-15
+  ENDIF.                                              "INS CHG-15
+
+*--->Call Smartforms by Function Mode Name
+  IF p_fiori IS NOT INITIAL.
+    ssfctrlop-no_dialog = 'X'.
+    ssfctrlop-getotf    = 'X'.
+    ssfctrlop-no_open = 'X'.
+    ssfctrlop-no_close = 'X'.
+    ssfctrlop-preview = 'X'.
+
+*    ssfcompop-tddest = 'LOCL'.                       "CHG-20: Del
+    ssfcompop-tddest = 'LPDF'.                        "CHG-20: Ins
+    ssfcompop-tdnewid = 'X'.
+    ssfcompop-tdimmed = 'X'.
+    ssfcompop-tdiexit = 'X'.
+  ENDIF.                                              "INS CHG-15
+
+  IF gv_attach IS INITIAL.
+    CALL FUNCTION 'SSF_OPEN'
+      EXPORTING
+        user_settings      = ' '
+        control_parameters = ssfctrlop
+        output_options     = ssfcompop
+      IMPORTING
+        job_output_options = ssfcresop
+      EXCEPTIONS
+        formatting_error   = 1
+        internal_error     = 2
+        send_error         = 3
+        user_canceled      = 4
+        OTHERS             = 5.
+    IF sy-subrc <> 0.                                   "INS CHG-15
+      EXIT.                                             "INS CHG-15
+    ENDIF.                                              "INS CHG-15
+  ENDIF.                                                "INS CHG-15
+
+
+*  ELSE.                                              "DEL CHG-15
+*    CALL FUNCTION 'SSF_OPEN'.                        "DEL CHG-15
+*  ENDIF.                                             "DEL CHG-15
+
+*  CALL FUNCTION 'SSF_OPEN'.     "DEL FIORI-01
+  ssfctrlop-no_open = 'X'.
+  ssfctrlop-no_close = 'X'.
+  DATA: cnt_nm TYPE i.
+  DATA v_ekgrp LIKE ekko-ekgrp.
+  LOOP AT gt_header.
+    "beg iAI27.04.2017 08:33:00 [CHG-10]
+    PERFORM get_form_name USING gt_header-ebeln
+                                func_mod_name1.
+    "end iAI27.04.2017 08:33:00 [CHG-10]
+
+    PERFORM pf_get_qrcode_url USING gt_header-ebeln CHANGING gv_qrcode.     " +CHG-27
+
+    IF gv_attach = 'X'.
+      CALL FUNCTION 'SSF_OPEN'
+        EXPORTING
+          user_settings      = ' '
+          control_parameters = ssfctrlop
+          output_options     = ssfcompop
+        IMPORTING
+          job_output_options = ssfcresop
+        EXCEPTIONS
+          formatting_error   = 1
+          internal_error     = 2
+          send_error         = 3
+          user_canceled      = 4
+          OTHERS             = 5.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+    ENDIF.
+
+    cnt_nm = cnt_nm + 1.
+    IF cnt_nm = 1.
+      IF p_name IS INITIAL.
+        SELECT SINGLE ekgrp INTO v_ekgrp
+           FROM ekko
+        WHERE ebeln = gt_header-ebeln.
+        IF sy-subrc = 0.
+          SELECT SINGLE * FROM ztmmpurchgroup
+          WHERE zpur_grp = v_ekgrp.
+          IF sy-subrc = 0.
+            CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+            INTO p_name SEPARATED BY space.
+          ENDIF.
+        ENDIF.
+*        ELSE.
+*          CLEAR gt_header-PUR_POSITION1.
+      ENDIF.
+    ENDIF.
+
+    IF NOT ( gt_header-t13_txt1 IS INITIAL AND
+             gt_header-t13_txt3 IS INITIAL AND
+             gt_header-t13_txt4 IS INITIAL ).
+
+      PERFORM clearspace CHANGING gt_header-t13_txt1.
+      PERFORM clearspace CHANGING gt_header-t13_txt3.
+      PERFORM clearspace CHANGING gt_header-t13_txt4.
+
+      CONCATENATE '(' gt_header-t13_txt1 gt_header-t13_txt3 gt_header-t13_txt4 ')' INTO l_name1
+      SEPARATED BY space..
+    ELSE.
+      CONCATENATE
+                  '(......................................'
+                  '.............................)'
+
+             INTO l_name1.
+    ENDIF.
+*Position1
+    PERFORM clearspace CHANGING gt_header-t13_txt2.
+*    IF gt_header-txt6 IS NOT INITIAL
+**    AND ( gt_header-bsart EQ '3002' OR gt_header-bsart(1) EQ '5' ).
+*    AND ( gt_header-bsart EQ '3002' OR gt_header-bsart(1) EQ '5' OR ( gt_header-bsart EQ '3001' AND gt_header-zzmm_no_esign = 'X' ) ).
+    IF gt_header-bsart EQ '3001' AND gt_header-zzmm_no_esign = 'X'.
+
+      CONCATENATE gt_header-t13_txt2 gt_header-txt6 INTO l_posi1
+        SEPARATED BY space.
+
+    ELSE.
+      MOVE gt_header-t13_txt2 TO l_posi1.
+    ENDIF.
+*    ELSE.
+*      MOVE gt_header-t13_txt2 TO l_posi1.
+*    ENDIF.
+
+    CASE  gt_header-type.
+      WHEN 'X'.
+*        CALL FUNCTION func_mod_name2" CHG-08 : Comment
+        CALL FUNCTION func_mod_name1   " CHG-08 : Insert
+          EXPORTING
+            control_parameters = ssfctrlop
+            g_ebeln            = gt_header-ebeln
+            g_subj             = g_subj
+            g_maker            = p_name
+            g_page             = g_page
+            g_txt              = g_txt
+            g_txt2             = g_txt2
+            g_cont             = p_poscb " CHG-08 : insert
+            g_pos              = p_pos  " CHG-08 : insert
+            g_bankcb           = p_bankcb   "CHG-16: Insert
+            g_form             = r1     " CHG-09 INS
+            g_qrcode           = gv_qrcode  " +CHG-27
+            n1                 = l_name1
+            p1                 = l_posi1
+*           im_v_sign_10       = gv_sign_10.               "INS CHG-25 "<-INC0008051(-)
+            im_v_sign_10       = gt_header-esign.                             "<-INC0008051(+)
+      WHEN OTHERS.
+        CALL FUNCTION func_mod_name1
+          EXPORTING
+            control_parameters = ssfctrlop
+            g_ebeln            = gt_header-ebeln
+            g_subj             = g_subj
+            g_maker            = p_name
+            g_page             = g_page
+            g_txt              = g_txt
+            g_txt2             = g_txt2
+            g_cont             = p_poscb " CHG-08 : insert
+            g_pos              = p_pos  " CHG-08 : insert
+            g_bankcb           = p_bankcb   "CHG-16: Insert
+            g_form             = r1     " CHG-09 INS
+            g_qrcode           = gv_qrcode  " +CHG-27
+            n1                 = l_name1
+            p1                 = l_posi1
+*           im_v_sign_10       = gv_sign_10.               "INS CHG-25 "<-INC0008051(-)
+            im_v_sign_10       = gt_header-esign.                             "<-INC0008051(+)
+    ENDCASE.
+
+    IF gv_attach = 'X'.
+
+      CALL FUNCTION 'SSF_CLOSE'
+        IMPORTING
+          job_output_info  = ssfcrescl
+        EXCEPTIONS
+          formatting_error = 1
+          internal_error   = 2
+          send_error       = 3
+          OTHERS           = 4.
+
+      CLEAR: gt_tstotf[], lw_attach, lv_pdf_xstring, lv_arc_id, lv_arc_docid, lv_file_size, lt_return[].
+      APPEND LINES OF ssfcrescl-otfdata[] TO gt_tstotf[].
+
+* Convert to OTF
+      CALL FUNCTION 'CONVERT_OTF'
+        EXPORTING
+          format                = 'PDF'
+        IMPORTING
+          bin_filesize          = lv_pdf_len
+          bin_file              = lv_pdf_xstring "binary file
+        TABLES
+          otf                   = gt_tstotf
+          lines                 = lt_lines
+        EXCEPTIONS
+          err_max_linewidth     = 1
+          err_format            = 2
+          err_conv_not_possible = 3
+          err_bad_otf           = 4
+          OTHERS                = 5.
+
+      lw_attach-key_value    = gt_header-ebeln.
+      lw_attach-mimetype     = 'application/pdf'.
+      lw_attach-file_name    = gt_header-ebeln && '_' && sy-datum && '_' && sy-uzeit && '.pdf'.
+      lw_attach-file_content = lv_pdf_xstring.
+
+      zcl_bcba_utils=>create_attach(
+        EXPORTING
+          im_sap_obj     = 'BUS2012'
+          im_ar_obj      = 'ZLMM002'
+          is_attach      = lw_attach
+        IMPORTING
+          ex_arc_id      = lv_arc_id
+          ex_arc_docid   = lv_arc_docid
+          ex_file_size   = lv_file_size
+          et_return      = lt_return ).
+
+      IF lt_return[] IS INITIAL.
+        MESSAGE 'เอกสารแนบสำเร็จ'  && ` ` && lw_attach-file_name TYPE 'S'.
+      ELSE.
+        MESSAGE 'เอกสารแนบไม่สำเร็จ'  && ` ` && lw_attach-file_name TYPE 'S' DISPLAY LIKE 'E'.
+      ENDIF.
+    ENDIF.
+
+  ENDLOOP.
+*  CALL FUNCTION 'SSF_CLOSE'.   "DEL FIORI-01
+
+*>>> START INS FIORI-01 >>>
+  IF gv_attach IS INITIAL.
+    CALL FUNCTION 'SSF_CLOSE'
+      IMPORTING
+        job_output_info  = ssfcrescl
+      EXCEPTIONS
+        formatting_error = 1
+        internal_error   = 2
+        send_error       = 3
+        OTHERS           = 4.
+  ENDIF.
+
+  IF p_fiori IS NOT INITIAL.
+    APPEND LINES OF ssfcrescl-otfdata[] TO lt_tstotf[].
+
+*Convert to OTF
+    CALL FUNCTION 'CONVERT_OTF'
+      EXPORTING
+        format                = 'PDF'
+      IMPORTING
+        bin_filesize          = lv_pdf_len
+        bin_file              = lv_pdf_xstring "binary file
+      TABLES
+        otf                   = lt_tstotf
+        lines                 = lt_lines
+      EXCEPTIONS
+        err_max_linewidth     = 1
+        err_format            = 2
+        err_conv_not_possible = 3
+        err_bad_otf           = 4
+        OTHERS                = 5.
+    IF sy-subrc = 0.
+      DATA(lv_po_pdf) = lv_pdf_xstring.
+      EXPORT lv_po_pdf = lv_pdf_xstring TO MEMORY ID 'PO_PDF'.
+    ENDIF.
+  ENDIF.
+*<<< END INS FIORI-01 <<<
+
+*<<< BOI CHG-15
+*  IF gv_attach = 'X'.
+*    APPEND LINES OF ssfcrescl-otfdata[] TO gt_tstotf[].
+*  ENDIF.
+  IF p_prform IS NOT INITIAL.
+    APPEND LINES OF ssfcrescl-otfdata[] TO gt_tstotf[].
+    EXPORT t_totf FROM gt_tstotf TO MEMORY ID 'PR_FORM'.
+  ENDIF.
+*<<< EOI CHG-15
+ENDFORM.                    " PF_PRINT_DOC
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_SET_TYPE_REPORT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_set_type_report .
+*--->Set flag for trigger in smartforms
+  LOOP AT gt_header.
+    READ TABLE gt_accass WITH KEY "geber+0(1) = '1'
+                                  ebeln      = gt_header-ebeln.
+*--->TYPE = 'X' -> รายงานจากงบประมาณ
+*--->TYPE = ' ' -> รายงานจากจุฬา
+    IF sy-subrc = 0.
+      IF gt_accass-geber(1) = 1.
+        gt_header-type = 'X'.
+        MODIFY gt_header.
+      ENDIF.
+      SELECT SINGLE stcd1 INTO gt_header-vadress_tax
+                          FROM j_1bbranch
+      WHERE branch =  gt_accass-gsber .
+      IF sy-subrc = 0.
+        MODIFY gt_header.
+      ENDIF.
+
+    ENDIF.
+
+
+
+  ENDLOOP.
+ENDFORM.                    " PF_SET_TYPE_REPORT
+
+*&---------------------------------------------------------------------*
+*&      Form  pf_smart_get_data
+*&---------------------------------------------------------------------*
+FORM pf_smart_get_data TABLES im_header im_detail
+                              im_txt_head im_accass.
+
+  im_header[]   = gt_header[].
+  im_detail[]   = gt_detail[].
+  im_txt_head[] = gt_txt_head[].
+  im_accass[]   = gt_accass[].
+
+ENDFORM.                    "pf_smart_get_data
+
+*&---------------------------------------------------------------------*
+*&      Form  pf_set_pr_header
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_set_pr_header .
+  DATA: lt_line TYPE TABLE OF tline WITH HEADER LINE.
+  DATA: l_obj  TYPE thead-tdname,
+        l_line TYPE i.                   "<<< CHG-01:INSERT
+  DATA: BEGIN OF lt_pr OCCURS 0,
+          banfn LIKE eban-banfn,
+          bnfpo LIKE eban-bnfpo,
+        END OF lt_pr.
+
+*--->Get first line active from PR
+*  LOOP AT GT_HEADER WHERE NO_PR = ' '.   ">>> CHG-01:DELETE
+  LOOP AT gt_header.                      "<<< CHG-01:INSERT
+
+    LOOP AT gt_detail WHERE ebeln = gt_header-ebeln.
+*>>> CHG-01 : Start of deletion
+*      SELECT MAX( BANFN )
+*             MIN( BNFPO )
+*        INTO TABLE  LT_PR
+*        FROM EBAN
+*       WHERE BANFN = GT_DETAIL-BANFN
+*         AND LOEKZ <> 'X'.
+*      DELETE LT_PR WHERE BANFN IS INITIAL AND BNFPO IS INITIAL.
+*      DESCRIBE TABLE LT_PR LINES L_LINE.
+*      IF NOT LT_PR[] IS INITIAL.
+**--->Get text first line active from PR
+*        LOOP AT LT_PR.
+*          CONCATENATE LT_PR-BANFN LT_PR-BNFPO
+*                     INTO L_OBJ.
+*
+*          PERFORM PF_READ_TEXT TABLES LT_LINE
+*                                   USING L_OBJ 'B05' 'EBAN' 'X'.
+*          IF NOT LT_LINE[] IS INITIAL.
+*            MOVE-CORRESPONDING GT_DETAIL TO GT_TXT_ITEM.
+*            READ TABLE LT_LINE INDEX 1.
+*            MOVE LT_LINE-TDLINE TO GT_HEADER-PR_B5.
+*          ENDIF.
+*
+*          PERFORM PF_READ_TEXT TABLES LT_LINE
+*                                   USING L_OBJ 'B06' 'EBAN' 'X'.
+*          IF NOT LT_LINE[] IS INITIAL.
+*            MOVE-CORRESPONDING GT_DETAIL TO GT_TXT_ITEM.
+*            READ TABLE LT_LINE INDEX 1.
+*            MOVE LT_LINE-TDLINE TO GT_HEADER-PR_B6.
+*          ENDIF.
+*
+*          PERFORM PF_READ_TEXT TABLES LT_LINE
+*                                   USING L_OBJ 'B07' 'EBAN' 'X'.
+*          IF NOT LT_LINE[] IS INITIAL.
+*            MOVE-CORRESPONDING GT_DETAIL TO GT_TXT_ITEM.
+*            READ TABLE LT_LINE INDEX 1.
+*            MOVE LT_LINE-TDLINE TO GT_HEADER-PR_B7.
+*          ENDIF.
+*
+*        ENDLOOP.
+*      ENDIF.
+*<<< CHG-01 : End of deletion
+*>>> CHG-01 : Start of insertion
+      IF gt_header-bsart CP '5*'.
+
+        SELECT banfn bnfpo
+          INTO TABLE  lt_pr
+          FROM eban
+         WHERE banfn = gt_header-pr_id
+        AND loekz <> 'X'.
+
+      ELSE.
+        SELECT banfn bnfpo
+          INTO TABLE  lt_pr
+          FROM eban
+         WHERE banfn = gt_detail-banfn
+        AND loekz <> 'X'.
+      ENDIF.
+
+      SORT lt_pr BY banfn bnfpo.
+      DELETE ADJACENT DUPLICATES FROM lt_pr COMPARING banfn.
+* Start of insert: CHG-06
+      CLEAR lt_pr.
+      READ TABLE lt_pr INDEX 1.
+      MOVE: lt_pr-banfn TO gt_header-banfn,
+            lt_pr-bnfpo TO gt_header-bnfpo.
+* End of insert: CHG-06
+
+      DESCRIBE TABLE lt_pr LINES l_line.
+
+      IF l_line GT 0.
+*--     Get text first line active from PR
+        READ TABLE lt_pr INDEX 1.
+        CONCATENATE lt_pr-banfn lt_pr-bnfpo INTO l_obj.
+*--     If this PO refers to a single PR, get long text B05 and B06
+*       of PR to display at header level.
+        IF l_line EQ 1.
+          PERFORM pf_read_text TABLES lt_line
+                                   USING l_obj 'B05' 'EBAN' 'X'.
+          IF NOT lt_line[] IS INITIAL.
+            MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+            READ TABLE lt_line INDEX 1.
+            MOVE lt_line-tdline TO gt_header-pr_b5.
+          ENDIF.
+
+          PERFORM pf_read_text TABLES lt_line
+                                   USING l_obj 'B06' 'EBAN' 'X'.
+          IF NOT lt_line[] IS INITIAL.
+            MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+            READ TABLE lt_line INDEX 1.
+            MOVE lt_line-tdline TO gt_header-pr_b6.
+          ENDIF.
+        ELSE.
+          CLEAR: gt_header-pr_b5, gt_header-pr_b6.
+        ENDIF.
+
+        PERFORM pf_read_text TABLES lt_line
+*                                 USING l_obj 'B07' 'EBAN' 'X'. "CHG-06
+                              USING l_obj 'B07' 'EBAN' ''.      "CHG-06
+        IF NOT lt_line[] IS INITIAL.
+          MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+* Start of comment: CHG-06
+*          READ TABLE lt_line INDEX 1.
+*          MOVE lt_line-tdline TO gt_header-pr_b7.
+* End of comment: CHG-06
+* Start of insert: CHG-06
+          LOOP AT lt_line WHERE tdline IS NOT INITIAL.
+            IF gt_header-pr_b7 IS INITIAL.
+              gt_header-pr_b7 = lt_line-tdline.
+            ELSE.
+              CONCATENATE gt_header-pr_b7 lt_line-tdline
+              INTO gt_header-pr_b7.
+            ENDIF.
+          ENDLOOP.
+* End of insert: CHG-06
+        ENDIF.
+        "CHG-07 : Start Comment
+*        PERFORM pf_read_text TABLES lt_line
+*                                 USING l_obj 'B09' 'EBAN' 'X'.
+*        IF NOT lt_line[] IS INITIAL.
+*          MOVE-CORRESPONDING gt_detail TO gt_txt_item.
+*          READ TABLE lt_line INDEX 1.
+*          MOVE lt_line-tdline TO gt_header-pr_b09.
+*        ENDIF.
+        "CHG-07 : End Comment
+      ENDIF.
+*<<< CHG-01 : End of insertion
+      EXIT.
+    ENDLOOP.
+
+    MODIFY gt_header.
+  ENDLOOP.
+  CLEAR lt_line.
+  REFRESH lt_line.
+ENDFORM.                    " pf_set_pr_header
+
+*&---------------------------------------------------------------------*
+*&      Form  PF_MERGE_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_merge_data .
+*--->Merge data to gt_detail
+  CHECK NOT gt_txt_item[] IS INITIAL.
+  LOOP AT  gt_txt_item.
+    CLEAR gt_detail.
+    MOVE: gt_txt_item-ebeln TO gt_detail-ebeln,
+          gt_txt_item-ebelp TO gt_detail-ebelp,
+          gt_txt_item-text  TO gt_detail-txz01,
+          gt_txt_item-seq   TO gt_detail-seq.
+    APPEND gt_detail.
+  ENDLOOP.
+  SORT gt_detail BY ebeln ebelp seq.
+  CLEAR gt_txt_item.
+  REFRESH gt_txt_item.
+ENDFORM.                    " PF_MERGE_DATA
+
+*&---------------------------------------------------------------------*
+*&      Form  pf_chg_to_ldate
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_chg_to_ldate USING us_input TYPE tline-tdline
+                           us_ldate TYPE tline-tdline.
+  DATA: l_date    TYPE sy-datum,
+        l_ldate   TYPE text20,
+        l_year(4).
+
+  CLEAR us_ldate.
+  CONDENSE us_input NO-GAPS.
+  CONCATENATE '20'
+              us_input+6(2)
+              us_input+3(2)
+              us_input+0(2)
+         INTO l_date.
+
+  CALL FUNCTION 'RP_CHECK_DATE'
+    EXPORTING
+      date         = l_date
+    EXCEPTIONS
+      date_invalid = 1
+      OTHERS       = 2.
+  IF sy-subrc = 0.
+    CALL FUNCTION 'ZCONVERT_DATE'
+      EXPORTING
+        im_date  = l_date
+      IMPORTING
+        date_out = l_ldate.
+    CONCATENATE 'ลงวันที่ ' l_ldate INTO us_ldate.
+  ENDIF.
+
+ENDFORM.                    " pf_chg_to_ldate
+*&---------------------------------------------------------------------*
+*&      Form  entry_neu
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->ENT_RETCO  text
+*      -->ENT_SCREEN text
+*----------------------------------------------------------------------*
+FORM entry_neu USING ent_retco TYPE i ent_screen TYPE c.
+  DATA v_answer TYPE char01.
+  IF sy-ucomm = 'METOGG' OR sy-ucomm = 'PREVOUTPUT'.
+
+    CLEAR retco.
+    IF nast-objky IS NOT INITIAL.
+
+
+      wa_screen = ent_screen.
+      wa_spras = nast-spras.
+      CLEAR ent_retco.
+      PERFORM pf_set_header.
+*      PERFORM pf_get_header.     " INC0007082-del
+      PERFORM pf_get_header_v2.   " INC0007082-ins
+      PERFORM pf_get_detail.
+      IF NOT gt_detail[] IS INITIAL.
+        PERFORM pf_calculate_header.
+        PERFORM pf_text_head.
+        PERFORM pf_text_item.
+        PERFORM pf_get_accass.
+        PERFORM pf_chk_diff_fund_pr.
+        PERFORM pf_set_type_report.
+        PERFORM pf_set_pr_header.
+        PERFORM pf_get_pr_item.
+        PERFORM pf_merge_data.
+        PERFORM pf_print_doc2.
+      ENDIF.
+    ELSE.
+      IF retco NE 0.
+        ent_retco = 1.
+      ELSE.
+        ent_retco = 0.
+      ENDIF.
+      MESSAGE i000(zcu) WITH 'การเรียกดูตัวอย่างก่อนพิมพ์ (Print Preview)' ' จะต้องบันทึกข้อมูลก่อนทุกครั้ง'.
+*        CALL FUNCTION 'POPUP_TO_CONFIRM'
+*          EXPORTING
+*            titlebar              = 'แสดงรายละเอียด'
+*            text_question         = 'การเรียกดูตัวอย่างก่อนพิมพ์ (Print Preview) จะต้องบันทึกข้อมูลก่อนทุกครั้ง'
+*            text_button_1         = 'OK'
+*            text_button_2         = 'NO'
+*            display_cancel_button = ''
+*          IMPORTING
+*            answer                = v_answer.
+      EXIT.
+    ENDIF.
+  ELSE.
+*    MESSAGE s899(sd) WITH text-e01.
+    IF retco NE 0.
+      ent_retco = 1.
+    ELSE.
+      ent_retco = 0.
+    ENDIF.
+    EXIT.
+  ENDIF.
+*clear:ent_retco ,ent_screen.
+
+*  LEAVE LIST-PROCESSING.
+
+*move retco to ent_retco.
+ENDFORM.                    "entry_neu
+*&---------------------------------------------------------------------*
+*&      Form  PF_PRINT_DOC2
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM pf_print_doc2 .
+  DATA: func_mod_name1 TYPE rs38l_fnam,
+        func_mod_name2 TYPE rs38l_fnam,
+        f_name         TYPE tdsfname.
+  DATA: ssfctrlop LIKE ssfctrlop,
+        ls_crescl TYPE ssfcrescl.                           "INS CHG-15
+  DATA: l_name1 TYPE string,
+        l_posi1 TYPE string.
+
+  IF NOT ( t13_txt1 IS INITIAL AND
+           t13_txt3 IS INITIAL AND
+           t13_txt4 IS INITIAL ).
+
+    PERFORM clearspace CHANGING t13_txt1.
+    PERFORM clearspace CHANGING t13_txt3.
+    PERFORM clearspace CHANGING t13_txt4.
+
+    CONCATENATE '(' t13_txt1 t13_txt3 t13_txt4 ')' INTO l_name1
+    SEPARATED BY space..
+  ELSE.
+    CONCATENATE '(.....................................'
+                  '....................................)'
+           INTO l_name1.
+  ENDIF.
+*Position1
+  PERFORM clearspace CHANGING t13_txt2.
+  MOVE t13_txt2 TO l_posi1.
+
+*--->Get Function Mode Name in System
+  f_name = 'ZLPUFM03_1_FORM_S4'.
+  CALL FUNCTION 'SSF_FUNCTION_MODULE_NAME'
+    EXPORTING
+      formname = f_name
+    IMPORTING
+      fm_name  = func_mod_name1.
+  f_name = 'ZLPUFM03_1_FORM_S4'. "เงินแผ่นดิน เปลี่ยนครุฑ
+*  f_name = 'ZLPUFM03_1_FORM'.
+  CALL FUNCTION 'SSF_FUNCTION_MODULE_NAME'
+    EXPORTING
+      formname = f_name
+    IMPORTING
+      fm_name  = func_mod_name2.
+
+*--->Call Smartforms by Function Mode Name
+  CALL FUNCTION 'SSF_OPEN'.
+
+  ssfctrlop-no_open = 'X'.
+  ssfctrlop-no_close = 'X'.
+  LOOP AT gt_header.
+    IF p_name IS INITIAL.
+      SELECT SINGLE *
+         FROM ekko
+      WHERE ebeln = gt_header-ebeln.
+      IF sy-subrc = 0.
+        SELECT SINGLE * FROM ztmmpurchgroup
+        WHERE zpur_grp = ekko-ekgrp.
+        IF sy-subrc = 0.
+          CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+          INTO p_name SEPARATED BY space.
+        ENDIF.
+      ENDIF.
+*        ELSE.
+*           CLEAR gt_header-PUR_POSITION1.
+    ENDIF.
+
+    PERFORM pf_get_qrcode_url USING gt_header-ebeln CHANGING gv_qrcode.       " +CHG-27
+
+    CASE  gt_header-type.
+      WHEN 'X'.
+        CALL FUNCTION func_mod_name2
+          EXPORTING
+            control_parameters = ssfctrlop
+            g_ebeln            = gt_header-ebeln
+            g_subj             = g_subj
+            g_maker            = p_name
+            g_page             = g_page
+            g_txt              = g_txt
+            g_txt2             = g_txt2
+            g_qrcode           = gv_qrcode                  " +CHG-27
+            n1                 = l_name1
+            p1                 = l_posi1
+*           im_v_sign_10       = gv_sign_10.               "INS CHG-25 "<-INC0008051(-)
+            im_v_sign_10       = gt_header-esign.                             "<-INC0008051(+)
+
+
+      WHEN OTHERS.
+        CALL FUNCTION func_mod_name1
+          EXPORTING
+            control_parameters = ssfctrlop
+            g_ebeln            = gt_header-ebeln
+            g_subj             = g_subj
+            g_maker            = p_name
+            g_page             = g_page
+            g_txt              = g_txt
+            g_txt2             = g_txt2
+            n1                 = l_name1
+            p1                 = l_posi1
+*           im_v_sign_10       = gv_sign_10.               "INS CHG-25 "<-INC0008051(-)
+            im_v_sign_10       = gt_header-esign.                             "<-INC0008051(+)
+    ENDCASE.
+
+  ENDLOOP.
+
+  CALL FUNCTION 'SSF_CLOSE'.
+
+
+*<<< BOI CHG-15
+  IF gv_attach = 'X'.
+    APPEND LINES OF ls_crescl-otfdata[] TO gt_tstotf[].
+  ENDIF.
+  IF p_prform IS NOT INITIAL.
+    APPEND LINES OF ls_crescl-otfdata[] TO gt_tstotf[].
+    EXPORT t_totf FROM gt_tstotf TO MEMORY ID 'PO_FORM'.
+  ENDIF.
+*<<< EOI CHG-15
+ENDFORM.                    " PF_PRINT_DOC2
+*&---------------------------------------------------------------------*
+*&      Form  CLEARSPACE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      <--P_T10_TXT1  text
+*      <--P_T10_TXT3  text
+*      <--P_T10_TXT4  text
+*----------------------------------------------------------------------*
+FORM clearspace  CHANGING p_t10_txt1.
+
+  SHIFT p_t10_txt1 LEFT DELETING LEADING space.
+
+
+ENDFORM.                    " CLEARSPACE
+*&---------------------------------------------------------------------*
+*&      Form  GET_VALUE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM get_value .
+
+  IMPORT gv_ebeln FROM MEMORY ID 'EBELN_NO'.
+
+  IF p_fiori IS INITIAL.  "INS FIORI-01
+    " CHECK gv_ebeln NE s_ebeln-low. "CHG-08 : Comment เดิมใช้ check เพื่อเปลียนข้อมูลเริ่มต้นที่หน้าจอ ตอนนี้ใช้ if แทน
+    IF gv_ebeln NOT IN s_ebeln[].
+      CLEAR: p_name, p_pos.
+*      SELECT SINGLE * FROM ekpo  "CU_UPG_1809: Start
+*       WHERE ebeln IN s_ebeln.
+      SELECT matkl UP TO 1 ROWS
+        INTO @DATA(lv_matkl)
+        FROM ekpo
+       WHERE ebeln IN @s_ebeln .
+
+      ENDSELECT.                 "CU_UPG_1809: End
+
+      CASE lv_matkl+0(3).  "CU_UPG_1809
+        WHEN '002'.
+          v_r2 = 'X'.
+          r2 = 'X'.
+          CLEAR: v_r1, r1.                                        "CHG-06
+        WHEN OTHERS.
+          v_r1 = 'X'.
+          r1 = 'X'.
+          CLEAR: v_r2, r2.                                        "CHG-06
+      ENDCASE.
+
+    ENDIF.
+  ENDIF.    "INS FIORI-01
+
+  SELECT SINGLE *
+     FROM ekko
+  WHERE ebeln = s_ebeln-low.
+  IF sy-subrc = 0.
+    SELECT SINGLE * FROM ztmmpurchgroup
+    WHERE zpur_grp = ekko-ekgrp.
+    "CLEAR: p_name, p_pos.                                       "CHG-06 " CHG-08 : Comment
+    IF sy-subrc = 0.
+      IF gv_ebeln NOT IN s_ebeln[].
+        IF p_name IS INITIAL.     " CHG-08 : Insert
+          CONCATENATE ztmmpurchgroup-zname ztmmpurchgroup-zsurename
+            INTO p_name SEPARATED BY space.
+        ENDIF.                    " CHG-08 : Insert
+
+        "p_pos = ztmmpurchgroup-zpur_position2 . "CHG-08 : comment
+        "CHG-08 : start insert
+
+        p_pos = ztmmpurchgroup-zpur_position2 .
+      ENDIF.
+      "chg-08 : end insert
+
+
+    ELSE.
+      "p_pos = ztmmpurchgroup-zname.
+      p_name = ztmmpurchgroup-zpur_position1.
+    ENDIF.
+  ELSE.
+    CLEAR: p_pos, p_name.                                       "CHG-06
+  ENDIF.
+
+  EXPORT gv_ebeln FROM s_ebeln-low TO MEMORY ID 'EBELN_NO'.
+ENDFORM.                    " GET_VALUE
+*&---------------------------------------------------------------------*
+*&      Form  SET_FIELD
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_3706   text
+*      -->P_3707   text
+*----------------------------------------------------------------------*
+FORM set_field  USING    p_fnam
+                         p_input.
+
+
+  LOOP AT SCREEN.
+    CHECK screen-name = p_fnam.
+    screen-input = p_input.
+    MODIFY SCREEN.
+  ENDLOOP.
+ENDFORM.                    " SET_FIELD
+
+*&---------------------------------------------------------------------*
+*&      Form  GET_FORM_NAME
+*&---------------------------------------------------------------------*
+FORM get_form_name USING VALUE(pl_ebeln) TYPE ekko-ebeln
+                             pl_fname1 TYPE rs38l_fnam.
+  DATA: lv_werks TYPE ekpo-werks,
+        lv_name1 TYPE tdsfname.
+
+*>>CU_UPG_1809 : Start
+*  SELECT SINGLE werks
+*  INTO lv_werks
+*  FROM ekpo
+*  WHERE ebeln EQ pl_ebeln.
+
+  SELECT werks UP TO 1 ROWS
+  INTO lv_werks
+  FROM ekpo
+  WHERE ebeln EQ pl_ebeln
+  ORDER BY ebeln.
+
+*  IF ( sy-subrc EQ 0 ). "CU_UPG_1809 : End
+*Beg+++ eBA04.08.2017 09:53:18 [CHG-11]
+    DATA: lv_is_sasin TYPE flag.
+*End+++ eBA04.08.2017 09:53:18 [CHG-11]
+
+*Beg+++ eBA04.08.2017 09:53:18 [CHG-11]
+*   F ( lv_werks+2(2) EQ '58' ).
+    CALL FUNCTION 'ZMM_CHECK_SASINDEPT'
+      EXPORTING
+        im_werks    = lv_werks
+      IMPORTING
+        ie_is_sasin = lv_is_sasin.
+    IF lv_is_sasin EQ abap_true.
+*End+++ eBA04.08.2017 09:53:18 [CHG-11]
+      lv_name1 = 'ZLPUFM03_1_FORM_SASIN'.
+
+      CASE 'X'.
+        WHEN r1.
+          CONCATENATE g_subj '/ Purchase Order'
+            INTO g_subj SEPARATED BY space.
+
+        WHEN r2.
+          CONCATENATE g_subj '/ Work Order'
+            INTO g_subj SEPARATED BY space.
+      ENDCASE.
+    ELSE.
+      lv_name1 = 'ZLPUFM03_1_FORM_S4'.
+    ENDIF.
+    CALL FUNCTION 'SSF_FUNCTION_MODULE_NAME'
+      EXPORTING
+        formname = lv_name1
+      IMPORTING
+        fm_name  = pl_fname1.
+  ENDSELECT.
+*  ENDIF.
+
+ENDFORM.                    " GET_FORM_NAME
+*&---------------------------------------------------------------------*
+*& Form ATTACH_FORM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+*<<< BOI CHG-15
+FORM attach_form .
+  DATA lv_answer TYPE c.
+
+  DATA: lv_pdf_len     TYPE i,
+        lv_pdf_xstring TYPE xstring,
+        lt_lines       TYPE TABLE OF tline.
+
+  DATA: lw_attach    TYPE zsba_attachment,
+        lt_return    TYPE bapiret2_t,
+        lv_arc_id    TYPE saearchivi,
+        lv_arc_docid TYPE saeardoid,
+        lv_file_size TYPE so_doc_siz.
+
+  CLEAR: gv_attach,
+         gt_tstotf.
+
+  IF p_prform IS NOT INITIAL.
+    CHECK p_attach IS NOT INITIAL.
+
+  ELSE.
+
+    CALL FUNCTION 'POPUP_TO_CONFIRM'
+      EXPORTING
+        titlebar              = 'เอกสารแนบ'
+        text_question         = 'ต้องการแนบเอกสารใบสั่งซื้อสั่งจ้าง'
+        text_button_1         = 'ตกลง'
+        text_button_2         = 'ยกเลิก'
+        display_cancel_button = ''
+        start_column          = 25
+        start_row             = 6
+      IMPORTING
+        answer                = lv_answer
+      EXCEPTIONS
+        text_not_found        = 1
+        OTHERS                = 2.
+
+    CHECK lv_answer = '1'.
+
+  ENDIF.
+
+  gv_attach = abap_true.
+  PERFORM pf_print_doc.
+
+** Convert to OTF
+*  CALL FUNCTION 'CONVERT_OTF'
+*    EXPORTING
+*      format                = 'PDF'
+*    IMPORTING
+*      bin_filesize          = lv_pdf_len
+*      bin_file              = lv_pdf_xstring "binary file
+*    TABLES
+*      otf                   = gt_tstotf
+*      lines                 = lt_lines
+*    EXCEPTIONS
+*      err_max_linewidth     = 1
+*      err_format            = 2
+*      err_conv_not_possible = 3
+*      err_bad_otf           = 4
+*      OTHERS                = 5.
+*
+*  lw_attach-key_value    = gt_header-ebeln.
+*  lw_attach-mimetype     = 'application/pdf'.
+*  lw_attach-file_name    = gt_header-ebeln && '_' && sy-datum && '_' && sy-uzeit && '.pdf'.
+*  lw_attach-file_content = lv_pdf_xstring.
+*
+*  zcl_bcba_utils=>create_attach(
+*    EXPORTING
+*      im_sap_obj     = 'BUS2012'
+*      im_ar_obj      = 'ZLMM002'
+*      is_attach      = lw_attach
+*    IMPORTING
+*      ex_arc_id      = lv_arc_id
+*      ex_arc_docid   = lv_arc_docid
+*      ex_file_size   = lv_file_size
+*      et_return      = lt_return ).
+*
+*  IF lt_return[] IS INITIAL.
+*    MESSAGE 'เอกสารแนบสำเร็จ'  && ` ` && lw_attach-file_name TYPE 'S'.
+*  ELSE.
+*    MESSAGE 'เอกสารแนบไม่สำเร็จ'  && ` ` && lw_attach-file_name TYPE 'S' DISPLAY LIKE 'E'.
+*  ENDIF.
+
+ENDFORM.
+
+FORM pf_chk_autho.
+
+  CLEAR: gv_auth.
+
+*--->Check authorization
+  IF rd1 IS NOT INITIAL.
+    SELECT werks
+    FROM ekpo
+      INTO TABLE @DATA(lt_werks)
+      WHERE ebeln IN @s_ebeln.
+  "<<<CHG-19: Start Delete
+*  ELSE.
+*    SELECT werks
+*    FROM ekpo
+*      INTO TABLE lt_werks
+*      WHERE ebeln IN s_ebeln2.
+  ">>>CHG-19: End Delete
+  "<<<CHG-19: Start Insert
+  ELSEIF rd2 IS NOT INITIAL.
+    SELECT werks
+    FROM ekpo
+      INTO TABLE lt_werks
+      WHERE ebeln IN s_ebeln2.
+  ELSEIF rd3 IS NOT INITIAL.
+    SELECT werks
+    FROM ekpo
+      INTO TABLE lt_werks
+      WHERE ebeln IN s_ebeln3.
+  ">>>CHG-19: End Insert
+  ENDIF.
+
+  DELETE ADJACENT DUPLICATES FROM lt_werks.
+
+  LOOP AT lt_werks INTO DATA(ls_werks).
+    AUTHORITY-CHECK OBJECT 'M_BEST_WRK'
+               ID 'ACTVT' DUMMY
+               ID 'WERKS' FIELD ls_werks-werks.
+
+    IF sy-subrc <> 0.
+      MESSAGE s897(sd) WITH 'คุณไม่มีสิทธิในโรงงาน' ls_werks-werks '' .
+      gv_auth = 1.
+    ENDIF.
+  ENDLOOP.
+
+ENDFORM.
+*>>> EOI CHG-15
+
+* >>> +CHG-27
+
+*&---------------------------------------------------------------------*
+*& Form PF_GET_QRCODE_URL
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+FORM pf_get_qrcode_url USING    iv_ebeln  TYPE ekpo-ebeln
+                       CHANGING cv_qrcode TYPE string.
+
+  cv_qrcode = zcl_tcbc_param_2=>get_value( im_module     = 'MM'
+                                           im_param_id   = 'ZLPUEN111'
+                                           im_param_name = 'QRCODE_URL_PO'
+                                           im_param_ext  = space
+                                           im_begda      = sy-datum
+                                           im_endda      = sy-datum ).
+
+  IF cv_qrcode IS NOT INITIAL.
+    REPLACE ALL OCCURRENCES OF '&1' IN cv_qrcode WITH iv_ebeln.
+  ENDIF.
+
+ENDFORM.
+
+* <<< +CHG-27

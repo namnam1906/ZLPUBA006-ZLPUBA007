@@ -1,0 +1,31 @@
+FUNCTION zlpu_r006_popup_attach.
+*"----------------------------------------------------------------------
+*"*"Local interface:
+*"  IMPORTING
+*"     VALUE(IM_PRINT_NO) TYPE  ZPRINT_NO OPTIONAL
+*"     VALUE(IM_ATTACH) TYPE  CHAR1 OPTIONAL
+*"----------------------------------------------------------------------
+
+  DATA: lv_attach TYPE flag.
+  DATA: lw_input  TYPE zspuba026.
+  DATA: lt_otf    TYPE TABLE OF itcoo.
+
+  sy-langu = '2'.
+
+  IF im_attach = 'Y'.
+    lv_attach = 'X'.
+  ENDIF.
+
+  lw_input-print_no = im_print_no.
+
+  CALL FUNCTION 'ZLPU_R006_PR_FORM'
+    EXPORTING
+      is_input  = lw_input
+      im_attach = lv_attach
+    TABLES
+      et_otf    = lt_otf.
+
+  DELETE FROM ztmm_prform_tmp
+         WHERE print_no = im_print_no.
+
+ENDFUNCTION.

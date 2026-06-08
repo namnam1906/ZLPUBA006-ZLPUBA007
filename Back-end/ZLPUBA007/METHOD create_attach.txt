@@ -1,0 +1,307 @@
+*-----------------------------------------------------------------------
+*  Change-ID      Date        Description/Reason for Change
+*-----------------------------------------------------------------------
+*   CHG-01     17.07.2023    เพิ่ม error log สำหรับโปรแกรม ZFAPFM002 / Setthakorn
+*-----------------------------------------------------------------------
+*   CHG-02     29.08.2023    หน่วงเวลาหลังจาก error แล้วทำอีกครั้งสำหรับโปรแกรม ZFAPFM002 / Setthakorn
+*-----------------------------------------------------------------------
+*   CHG-03     12.09.2023    delete หน่วงเวลาหลังจาก error / Jarinya
+*-----------------------------------------------------------------------
+*   CHG-04     09.10.2023    เพิ่ม error log สำหรับโปรแกรม  ZFAPBA001 / Setthakorn
+*-----------------------------------------------------------------------
+
+  METHOD create_attach.
+
+    DATA: lv_doctype   TYPE toadd-doc_type,
+          lv_extension TYPE char10,
+          lv_mimetype  TYPE mimetypes-type,
+          lv_filename  TYPE toaat-filename,
+          lv_title     TYPE toaat-descr,
+          lv_objid     TYPE sapb-sapobjid.
+    DATA: lv_archiv_id TYPE saearchivi,
+          lv_arcdocid  TYPE sapb-sapadokid.
+    DATA: lt_bintab TYPE TABLE OF tbl1024,
+          lv_length TYPE sapb-length,
+          lv_len    TYPE i.
+
+    DATA: lv_attch_log TYPE ZTAP_ATTACHERROR , "CHG-01
+          lw_return TYPE BAPIRET2 .
+
+*1 read extension file
+    lv_title    = is_attach-file_name.
+    lv_filename = is_attach-file_name.
+    SPLIT lv_filename AT '.' INTO TABLE DATA(lt_fname).
+    DESCRIBE TABLE lt_fname LINES DATA(lv_lines).
+    READ TABLE lt_fname INTO lv_doctype INDEX lv_lines.
+
+    lv_objid = is_attach-key_value.
+
+    lv_mimetype = is_attach-mimetype.
+    CALL FUNCTION 'SA_KW_RFC_FILENAME_EXT_GET'
+      EXPORTING
+        mimetype  = lv_mimetype
+      IMPORTING
+        extension = lv_extension.
+    lv_doctype = lv_extension.
+    TRANSLATE lv_doctype TO UPPER CASE.
+
+
+    CALL FUNCTION 'ARCHIV_CONNECTDEFINITION_GET'
+      EXPORTING
+        objecttype    = im_sap_obj
+        documenttype  = im_ar_obj
+        client        = sy-mandt
+      IMPORTING
+        archivid      = lv_archiv_id
+      EXCEPTIONS
+        nothing_found = 1
+        OTHERS        = 2.
+    IF sy-subrc <> 0.
+      APPEND INITIAL LINE TO et_return ASSIGNING FIELD-SYMBOL(<fs_ret>).
+      <fs_ret>-id      = sy-msgid.
+      <fs_ret>-number  = sy-msgno.
+      <fs_ret>-type    = sy-msgty.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+              WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+         INTO <fs_ret>-message.
+      "CHG-01 start added
+      IF SY-CPROG = 'ZFAPFM002'.
+        lv_attch_log-FILE_NAME = lv_filename .
+        lv_attch_log-ACC_USER = SY-UNAME.
+        lv_attch_log-E_DATE = SY-DATUM .
+        lv_attch_log-E_TIME = SY-UZEIT.
+        lv_attch_log-E_MSG = <fs_ret>-message .
+        INSERT ZTAP_ATTACHERROR FROM lv_attch_log.
+        CLEAR lv_attch_log.
+        "CHG-02 Start Added               << CHG-03: start del
+*        WAIT UP TO 30 SECONDS .
+*        CALL FUNCTION 'ARCHIV_CONNECTDEFINITION_GET'
+*          EXPORTING
+*            objecttype    = im_sap_obj
+*            documenttype  = im_ar_obj
+*            client        = sy-mandt
+*          IMPORTING
+*            archivid      = lv_archiv_id
+*          EXCEPTIONS
+*            nothing_found = 1
+*            OTHERS        = 2.
+*        IF sy-subrc <> 0.
+*          APPEND INITIAL LINE TO et_return ASSIGNING <fs_ret> .
+*          <fs_ret>-id      = sy-msgid.
+*          <fs_ret>-number  = sy-msgno.
+*          <fs_ret>-type    = sy-msgty.
+*          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+*             INTO <fs_ret>-message.
+*          IF SY-CPROG = 'ZFAPFM002'.
+*            lv_attch_log-FILE_NAME = lv_filename .
+*            lv_attch_log-ACC_USER = SY-UNAME.
+*            lv_attch_log-E_DATE = SY-DATUM .
+*            lv_attch_log-E_TIME = SY-UZEIT.
+*            lv_attch_log-E_MSG = <fs_ret>-message .
+*            INSERT ZTAP_ATTACHERROR FROM lv_attch_log.
+*            CLEAR lv_attch_log.
+*          ENDIF.
+*        ENDIF.
+        "CHG-02 End added                 << CHG-03: end del
+      ENDIF.
+      "CHG-04 Start added
+      IF SY-CPROG = 'ZFAPFM001'.
+        lw_return-type = 'E'.
+        lw_return-ID = sy-msgid .
+        lw_return-number = sy-msgno .
+        lw_return-MESSAGE_V1 = sy-msgv1 .
+        lw_return-MESSAGE_V2 = sy-msgv2 .
+        lw_return-MESSAGE_V3 = sy-msgv3 .
+        lw_return-MESSAGE_V4 = sy-msgv4 .
+        APPEND lw_return TO ET_RETURN.
+      ENDIF.
+      "CHG-04 End added
+      EXIT.
+    ENDIF.
+
+
+    CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+      EXPORTING
+        buffer        = is_attach-file_content
+      IMPORTING
+        output_length = lv_len
+      TABLES
+        binary_tab    = lt_bintab[].
+
+*  Create archiving
+    lv_length  = lv_len.
+    CALL FUNCTION 'ARCHIVOBJECT_CREATE_TABLE'
+      EXPORTING
+        archiv_id                = lv_archiv_id
+        document_type            = lv_doctype
+        length                   = lv_length
+      IMPORTING
+        archiv_doc_id            = lv_arcdocid
+      TABLES
+        binarchivobject          = lt_bintab[]
+      EXCEPTIONS
+        error_archiv             = 1
+        error_communicationtable = 2
+        error_kernel             = 3
+        OTHERS                   = 4.
+    IF sy-subrc <> 0.
+      APPEND INITIAL LINE TO et_return ASSIGNING <fs_ret>.
+      <fs_ret>-id      = sy-msgid.
+      <fs_ret>-number  = sy-msgno.
+      <fs_ret>-type    = sy-msgty.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+              WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+         INTO <fs_ret>-message.
+      "CHG-01 start added
+      IF SY-CPROG = 'ZFAPFM002'.
+        lv_attch_log-FILE_NAME = lv_filename .
+        lv_attch_log-ACC_USER = SY-UNAME.
+        lv_attch_log-E_DATE = SY-DATUM .
+        lv_attch_log-E_TIME = SY-UZEIT.
+        lv_attch_log-E_MSG = <fs_ret>-message .
+        INSERT ZTAP_ATTACHERROR FROM lv_attch_log.
+        CLEAR lv_attch_log.
+        "CHG-02 Start Added                         << CHG-03: start del
+*        WAIT UP TO 30 SECONDS .
+*        CALL FUNCTION 'ARCHIVOBJECT_CREATE_TABLE'
+*          EXPORTING
+*            archiv_id                = lv_archiv_id
+*            document_type            = lv_doctype
+*            length                   = lv_length
+*          IMPORTING
+*            archiv_doc_id            = lv_arcdocid
+*          TABLES
+*            binarchivobject          = lt_bintab[]
+*          EXCEPTIONS
+*            error_archiv             = 1
+*            error_communicationtable = 2
+*            error_kernel             = 3
+*            OTHERS                   = 4.
+*        IF sy-subrc <> 0.
+*          APPEND INITIAL LINE TO et_return ASSIGNING <fs_ret> .
+*          <fs_ret>-id      = sy-msgid.
+*          <fs_ret>-number  = sy-msgno.
+*          <fs_ret>-type    = sy-msgty.
+*          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+*             INTO <fs_ret>-message.
+*          IF SY-CPROG = 'ZFAPFM002'.
+*            lv_attch_log-FILE_NAME = lv_filename .
+*            lv_attch_log-ACC_USER = SY-UNAME.
+*            lv_attch_log-E_DATE = SY-DATUM .
+*            lv_attch_log-E_TIME = SY-UZEIT.
+*            lv_attch_log-E_MSG = <fs_ret>-message .
+*            INSERT ZTAP_ATTACHERROR FROM lv_attch_log.
+*            CLEAR lv_attch_log.
+*          ENDIF.
+*        ENDIF.
+        "CHG-02 End added                         << CHG-03: end del
+      ENDIF.
+      "CHG-04 Start added
+      IF SY-CPROG = 'ZFAPFM001'.
+        lw_return-type = 'E'.
+        lw_return-ID = sy-msgid .
+        lw_return-number = sy-msgno .
+        lw_return-MESSAGE_V1 = sy-msgv1 .
+        lw_return-MESSAGE_V2 = sy-msgv2 .
+        lw_return-MESSAGE_V3 = sy-msgv3 .
+        lw_return-MESSAGE_V4 = sy-msgv4 .
+        APPEND lw_return TO ET_RETURN.
+      ENDIF.
+      "CHG-04 End added
+      "CHG-01 end added
+      EXIT.
+    ENDIF.
+
+
+    CALL FUNCTION 'ARCHIV_CONNECTION_INSERT'
+      EXPORTING
+        archiv_id             = lv_archiv_id
+        arc_doc_id            = lv_arcdocid
+        ar_date               = sy-datum
+        ar_object             = im_ar_obj
+        object_id             = lv_objid
+        sap_object            = im_sap_obj
+        doc_type              = lv_doctype
+        filename              = lv_filename
+        descr                 = lv_title
+        creator               = sy-uname
+      EXCEPTIONS
+        error_connectiontable = 1
+        OTHERS                = 2.
+    IF sy-subrc <> 0.
+      APPEND INITIAL LINE TO et_return ASSIGNING <fs_ret>.
+      <fs_ret>-id      = sy-msgid.
+      <fs_ret>-number  = sy-msgno.
+      <fs_ret>-type    = sy-msgty.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+              WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+         INTO <fs_ret>-message.
+      "CHG-01 start added
+      IF SY-CPROG = 'ZFAPFM002'.
+        lv_attch_log-FILE_NAME = lv_filename .
+        lv_attch_log-ACC_USER = SY-UNAME.
+        lv_attch_log-E_DATE = SY-DATUM .
+        lv_attch_log-E_TIME = SY-UZEIT.
+        lv_attch_log-E_MSG = <fs_ret>-message .
+        INSERT ZTAP_ATTACHERROR FROM lv_attch_log.
+        CLEAR lv_attch_log.
+        "CHG-02 Start Added                           << CHG-03: start del
+*        WAIT UP TO 30 SECONDS .
+*        CALL FUNCTION 'ARCHIV_CONNECTION_INSERT'
+*          EXPORTING
+*            archiv_id             = lv_archiv_id
+*            arc_doc_id            = lv_arcdocid
+*            ar_date               = sy-datum
+*            ar_object             = im_ar_obj
+*            object_id             = lv_objid
+*            sap_object            = im_sap_obj
+*            doc_type              = lv_doctype
+*            filename              = lv_filename
+*            descr                 = lv_title
+*            creator               = sy-uname
+*          EXCEPTIONS
+*            error_connectiontable = 1
+*            OTHERS                = 2.
+*        IF sy-subrc <> 0.
+*          APPEND INITIAL LINE TO et_return ASSIGNING <fs_ret> .
+*          <fs_ret>-id      = sy-msgid.
+*          <fs_ret>-number  = sy-msgno.
+*          <fs_ret>-type    = sy-msgty.
+*          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+*                  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+*             INTO <fs_ret>-message.
+*          IF SY-CPROG = 'ZFAPFM002'.
+*            lv_attch_log-FILE_NAME = lv_filename .
+*            lv_attch_log-ACC_USER = SY-UNAME.
+*            lv_attch_log-E_DATE = SY-DATUM .
+*            lv_attch_log-E_TIME = SY-UZEIT.
+*            lv_attch_log-E_MSG = <fs_ret>-message .
+*            INSERT ZTAP_ATTACHERROR FROM lv_attch_log.
+*            CLEAR lv_attch_log.
+*          ENDIF.
+*        ENDIF.
+        "CHG-02 End added                             << CHG-03: end del
+      ENDIF.
+      "CHG-01 end added
+      "CHG-04 Start added
+      IF SY-CPROG = 'ZFAPFM001'.
+        lw_return-type = 'E'.
+        lw_return-ID = sy-msgid .
+        lw_return-number = sy-msgno .
+        lw_return-MESSAGE_V1 = sy-msgv1 .
+        lw_return-MESSAGE_V2 = sy-msgv2 .
+        lw_return-MESSAGE_V3 = sy-msgv3 .
+        lw_return-MESSAGE_V4 = sy-msgv4 .
+        APPEND lw_return TO ET_RETURN.
+      ENDIF.
+      "CHG-04 End added
+      EXIT.
+    ENDIF.
+
+    ex_arc_docid = lv_arcdocid.
+    ex_arc_id    = lv_archiv_id.
+    ex_file_size = lv_length.
+
+  ENDMETHOD.
