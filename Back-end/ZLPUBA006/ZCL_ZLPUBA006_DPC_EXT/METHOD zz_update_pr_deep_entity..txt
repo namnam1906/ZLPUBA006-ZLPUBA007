@@ -1,0 +1,78 @@
+METHOD zz_update_pr_deep_entity.
+
+  DATA: lo_dp_facade TYPE REF TO /iwbep/if_mgw_dp_facade,
+        lx_root      TYPE REF TO cx_root.
+  DATA: lt_aprv_detail  TYPE TABLE OF zcl_zlpuba006_mpc_ext=>ts_approvedetail  .
+  DATA: lt_return       TYPE bapiret2_t.
+  DATA: lw_request_data TYPE zcl_zlpuba006_mpc_ext=>ts_update_pr_deep,
+        lw_pr_detail    TYPE zcl_zlpuba006_mpc_ext=>ts_prdetail,
+        lw_aprv_detail  TYPE zcl_zlpuba006_mpc_ext=>ts_approvedetail.
+  DATA: lv_destination TYPE rfcdest,
+        lv_rfc_name    TYPE tfdir-funcname,
+        lv_subrc       TYPE sy-subrc,
+        lv_exc_msg     TYPE /iwbep/mgw_bop_rfc_excep_text.
+
+  FIELD-SYMBOLS: <lfs_data> TYPE any.
+
+* Get request input data
+  io_data_provider->read_entry_data( IMPORTING es_data = lw_request_data ).
+
+* Move request input to RFC import structure
+  MOVE-CORRESPONDING lw_request_data TO lw_pr_detail.
+
+  LOOP AT lw_request_data-updatepraprv ASSIGNING <lfs_data>.
+    MOVE-CORRESPONDING <lfs_data> TO lw_aprv_detail.
+    APPEND lw_aprv_detail TO lt_aprv_detail.
+  ENDLOOP.
+
+* Get RFC destination
+  lo_dp_facade = /iwbep/if_mgw_conv_srv_runtime~get_dp_facade( ).
+  lv_destination = /iwbep/cl_sb_gen_dpc_rt_util=>get_rfc_destination( io_dp_facade = lo_dp_facade ).
+
+* Call RFC function module
+  lv_rfc_name = 'ZLPU_U006_UPDATE_PR'.
+
+  IF lv_destination IS INITIAL OR lv_destination EQ 'NONE'.
+    TRY.
+        CALL FUNCTION lv_rfc_name
+          EXPORTING
+            is_pr_detail   = lw_pr_detail
+          IMPORTING
+            return         = lt_return
+          TABLES
+            it_aprv_detail = lt_aprv_detail
+          EXCEPTIONS
+            system_failure = 1000 message lv_exc_msg
+            OTHERS         = 1002.
+
+        lv_subrc = sy-subrc.
+*in case of co-deployment the exception is raised and needs to be caught
+      CATCH cx_root INTO lx_root.
+        lv_subrc = 1001.
+        lv_exc_msg = lx_root->if_message~get_text( ).
+    ENDTRY.
+  ELSE.
+    CALL FUNCTION lv_rfc_name DESTINATION lv_destination
+      EXPORTING
+        is_pr_detail          = lw_pr_detail
+      IMPORTING
+        return                = lt_return
+      TABLES
+        it_aprv_detail        = lt_aprv_detail
+      EXCEPTIONS
+        system_failure        = 1000 MESSAGE lv_exc_msg
+        communication_failure = 1001 MESSAGE lv_exc_msg
+        OTHERS                = 1002.
+
+    lv_subrc = sy-subrc.
+  ENDIF.
+
+  IF lt_return IS NOT INITIAL.
+    me->/iwbep/if_sb_dpc_comm_services~rfc_save_log(
+      EXPORTING
+        iv_entity_type = iv_entity_name
+        it_return      = lt_return
+        it_key_tab     = it_key_tab ).
+  ENDIF.
+
+ENDMETHOD.

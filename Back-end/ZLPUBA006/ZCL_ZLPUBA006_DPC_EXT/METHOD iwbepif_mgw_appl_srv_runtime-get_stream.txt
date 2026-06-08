@@ -1,0 +1,34 @@
+METHOD /iwbep/if_mgw_appl_srv_runtime~get_stream.
+
+  DATA: ls_lheader  TYPE ihttpnvp,
+        ls_stream   TYPE ty_s_media_resource,
+        lv_filename TYPE string.
+
+  CASE iv_entity_name.
+    WHEN 'PRForm'.
+      CALL METHOD me->zz_call_pr_form
+        EXPORTING
+          iv_entity_name          = iv_entity_name
+          iv_entity_set_name      = iv_entity_set_name
+          iv_source_name          = iv_source_name
+          it_key_tab              = it_key_tab
+          it_navigation_path      = it_navigation_path
+          io_tech_request_context = io_tech_request_context
+        IMPORTING
+          es_response_context     = es_response_context
+          ex_stream               = ls_stream
+          ex_filename             = lv_filename.
+  ENDCASE.
+
+  "To set file name in respond header
+  lv_filename = escape( val = lv_filename
+  format = cl_abap_format=>e_url ).
+  ls_lheader-name = 'Content-Disposition'.
+  ls_lheader-value = |inline; filename="{ lv_filename }"|.
+  set_header( is_header = ls_lheader ).
+
+  "Set respond stream
+  copy_data_to_ref( EXPORTING is_data = ls_stream
+                    CHANGING  cr_data = er_stream ).
+
+ENDMETHOD.

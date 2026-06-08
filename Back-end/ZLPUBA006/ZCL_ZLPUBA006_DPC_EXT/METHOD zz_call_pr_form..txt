@@ -1,0 +1,62 @@
+METHOD zz_call_pr_form.
+
+  DATA: lw_input    TYPE zspuba026.
+  DATA: lv_xstring  TYPE xstring.
+  DATA: lv_filesize TYPE i.
+  DATA: lt_otf      TYPE TABLE OF itcoo.
+  DATA: lt_lines    TYPE TABLE OF tline.
+
+
+*  LOOP AT it_key_tab INTO DATA(lw_key).
+*    DATA(lv_field) = |LW_INPUT-{ lw_key-name }|.
+*    ASSIGN (lv_field) TO FIELD-SYMBOL(<fs_field>).
+*    IF <fs_field> IS ASSIGNED.
+*      IF lw_key-value = '-'.
+*        CLEAR lw_key-value.
+*      ENDIF.
+*      <fs_field> = lw_key-value.
+*    ENDIF.
+*  ENDLOOP.
+  LOOP AT it_key_tab INTO DATA(lw_key).
+    CASE lw_key-name.
+      WHEN 'PRINT_NO'.
+        lw_input-print_no = lw_key-value.
+    ENDCASE.
+  ENDLOOP.
+
+
+  CALL FUNCTION 'ZLPU_R006_PR_FORM'
+    EXPORTING
+      is_input = lw_input
+    TABLES
+      et_otf   = lt_otf.
+
+
+  IF lt_otf[] IS NOT INITIAL.
+    CALL FUNCTION 'CONVERT_OTF'
+      EXPORTING
+        format                = 'PDF'
+      IMPORTING
+        bin_filesize          = lv_filesize
+        bin_file              = lv_xstring
+      TABLES
+        otf                   = lt_otf
+        lines                 = lt_lines
+      EXCEPTIONS
+        err_max_linewidth     = 1
+        err_format            = 2
+        err_conv_not_possible = 3
+        err_bad_otf           = 4
+        OTHERS                = 5.
+    IF sy-subrc = 0.
+      ex_stream-mime_type = 'application/pdf'.
+      ex_stream-value     = lv_xstring.
+    ELSE.
+      MESSAGE ID sy-msgid TYPE 'E' NUMBER sy-msgno
+        WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+  ENDIF.
+
+  CONCATENATE 'PR' sy-datum sy-uzeit '.pdf' INTO ex_filename.
+
+ENDMETHOD.
